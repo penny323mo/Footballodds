@@ -164,85 +164,23 @@ window.onload = function() {
 
 
 
-  });
-  const total = win + lose + draw;
-  const winPct = total ? (win / total * 100).toFixed(2) : "0.00";
-  const losePct = total ? (lose / total * 100).toFixed(2) : "0.00";
-  const drawPct = total ? (draw / total * 100).toFixed(2) : "0.00";
-
-  document.getElementById("asian-stats").innerText =
-    `主贏盤 ${win} 場 (${winPct}%)　主輸盤 ${lose} 場 (${losePct}%)　走水 ${draw} 場 (${drawPct}%)`;
-}
-
-
-function evaluateHandicapResult(homeGoals, awayGoals, handicap) {
-  const diff = homeGoals - awayGoals;
-  const result = diff - handicap;
-
-  // 判斷讓球盤勝負（贏盤、輸盤、走水）
-  // 特殊處理亞洲盤：-0.25、-0.75、-1.25 等
-  const absHandicap = Math.abs(handicap);
-  const direction = handicap > 0 ? -1 : 1;  // 主讓 or 客讓
-
-  const adjusted = diff * direction;
-
-  const remainder = absHandicap % 1;
-
-  if (absHandicap === 0.0) {
-    if (adjusted > 0) return "win";
-    else if (adjusted < 0) return "lose";
-    else return "draw";
-  }
-
-  if (remainder === 0.25) {
-    if (adjusted > Math.floor(absHandicap)) return "win";
-    if (adjusted === Math.floor(absHandicap)) return "half_win";
-    if (adjusted === 0) return "half_lose";
-    if (adjusted < 0) return "lose";
-  }
-
-  if (remainder === 0.5) {
-    if (adjusted > absHandicap) return "win";
-    if (adjusted === absHandicap) return "win";
-    if (adjusted < absHandicap) return "lose";
-  }
-
-  if (remainder === 0.75) {
-    if (adjusted >= Math.ceil(absHandicap)) return "win";
-    if (adjusted === Math.floor(absHandicap)) return "half_win";
-    if (adjusted === 0) return "half_lose";
-    if (adjusted < 0) return "lose";
-  }
-
-  if (absHandicap % 1 === 0) {
-    if (adjusted > absHandicap) return "win";
-    if (adjusted === absHandicap) return "draw";
-    if (adjusted < absHandicap) return "lose";
-  }
-
-  return "lose";  // fallback
-}
-
-
-
 function calculateAsianStats(filtered) {
   let win = 0, lose = 0, draw = 0;
   filtered.forEach(row => {
-    if (row.handicap_close_line === null || row.handicap_close_line === undefined) return;
-
     const line = parseFloat(row.handicap_close_line);
-    const home = parseInt(row.home_score);
-    const away = parseInt(row.away_score);
+    const home = parseInt(row.full_home_goals);
+    const away = parseInt(row.full_away_goals);
     if (isNaN(line) || isNaN(home) || isNaN(away)) return;
 
-    const verdict = evaluateHandicapResult(home, away, line);
+    const diff = home - away;
+    const result = diff - line;
 
-    if (verdict === "win" || verdict === "half_win") {
+    if (result > 0) {
       win += 1;
-    } else if (verdict === "draw") {
-      draw += 1;
-    } else {
+    } else if (result < 0) {
       lose += 1;
+    } else {
+      draw += 1;
     }
   });
   const total = win + lose + draw;
@@ -250,84 +188,6 @@ function calculateAsianStats(filtered) {
   const losePct = total ? (lose / total * 100).toFixed(2) : "0.00";
   const drawPct = total ? (draw / total * 100).toFixed(2) : "0.00";
 
-  document.getElementById("asian-stats").innerText =
-    `主贏盤 ${win} 場 (${winPct}%)　主輸盤 ${lose} 場 (${losePct}%)　走水 ${draw} 場 (${drawPct}%)`;
-}
-
-  });
-  const total = win + lose + draw;
-  const winPct = total ? (win / total * 100).toFixed(2) : "0.00";
-  const losePct = total ? (lose / total * 100).toFixed(2) : "0.00";
-  const drawPct = total ? (draw / total * 100).toFixed(2) : "0.00";
-
-  document.getElementById("asian-stats").innerText =
-    `主贏盤 ${win} 場 (${winPct}%)　主輸盤 ${lose} 場 (${losePct}%)　走水 ${draw} 場 (${drawPct}%)`;
-}
-
-
-document.addEventListener("DOMContentLoaded", function() {
-  loadData();
-  generateAsianLines("asian-open-line");
-  generateAsianLines("asian-close-line");
-  generateOULines("ou-open-line");
-  generateOULines("ou-close-line");
-});
-
-
-function evaluateHandicapResult(home, away, handicap) {
-  const diff = home - away;
-  const result = diff - handicap;
-  const abs = Math.abs(handicap);
-  const dir = handicap > 0 ? -1 : 1;
-  const adj = diff * dir;
-
-  const rem = abs % 1;
-
-  if (abs === 0.0) return adj > 0 ? "win" : (adj < 0 ? "lose" : "draw");
-
-  if (rem === 0.25) {
-    if (adj > Math.floor(abs)) return "win";
-    if (adj === Math.floor(abs)) return "half_win";
-    if (adj === 0) return "half_lose";
-    return "lose";
-  }
-
-  if (rem === 0.5) {
-    if (adj > abs) return "win";
-    if (adj === abs) return "win";
-    return "lose";
-  }
-
-  if (rem === 0.75) {
-    if (adj >= Math.ceil(abs)) return "win";
-    if (adj === Math.floor(abs)) return "half_win";
-    if (adj === 0) return "half_lose";
-    return "lose";
-  }
-
-  if (rem === 0) {
-    if (adj > abs) return "win";
-    if (adj === abs) return "draw";
-    return "lose";
-  }
-
-  return "lose";
-}
-
-
-function calculateAsianStats(filtered) {
-  let win = 0, lose = 0, draw = 0;
-  filtered.forEach(row => {
-    if (!row.handicap_close_line || row.home_score == null || row.away_score == null) return;
-    const verdict = evaluateHandicapResult(parseInt(row.home_score), parseInt(row.away_score), parseFloat(row.handicap_close_line));
-    if (verdict === "win" || verdict === "half_win") win++;
-    else if (verdict === "draw") draw++;
-    else lose++;
-  });
-  const total = win + draw + lose;
-  const winPct = total ? (win / total * 100).toFixed(2) : "0.00";
-  const losePct = total ? (lose / total * 100).toFixed(2) : "0.00";
-  const drawPct = total ? (draw / total * 100).toFixed(2) : "0.00";
   document.getElementById("asian-stats").innerText =
     `主贏盤 ${win} 場 (${winPct}%)　主輸盤 ${lose} 場 (${losePct}%)　走水 ${draw} 場 (${drawPct}%)`;
 }
