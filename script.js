@@ -1,134 +1,126 @@
-let dataset = [];
 
-async function loadData() {
-  try {
-    const response = await fetch('compiled_odds.json');
-    const data = await response.json();
-    dataset = data;
-    initDataTable(dataset);
-  } catch (error) {
-    console.error('數據載入失敗:', error);
+let allData = [];
+
+function showTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(tabDiv => tabDiv.classList.remove('active'));
+  if (tab === 'asian') {
+    document.getElementById('asian-tab-btn').classList.add('active');
+    document.getElementById('asian-tab').classList.add('active');
+  } else {
+    document.getElementById('ou-tab-btn').classList.add('active');
+    document.getElementById('ou-tab').classList.add('active');
   }
 }
 
-function initDataTable(data) {
-  // Destroy existing table if exists
-  if ($.fn.DataTable.isDataTable('#resultsTable')) {
-    $('#resultsTable').DataTable().destroy();
-    $('#resultsTable tbody').empty();
+function generateAsianLines() {
+  const select = document.getElementById('asian-line');
+  select.innerHTML = '';
+  for (let i = -4.5; i <= 4.5; i += 0.25) {
+    let display = i > 0 ? '+' + i.toFixed(2).replace(/\.00$/, '') : i.toFixed(2).replace(/\.00$/, '');
+    select.innerHTML += `<option value="${i}">${display}</option>`;
+  }
+}
+
+function generateOULines() {
+  const select = document.getElementById('ou-line');
+  select.innerHTML = '';
+  for (let i = 2.0; i <= 4.5; i += 0.25) {
+    select.innerHTML += `<option value="${i}">${i.toFixed(2).replace(/\.00$/, '')}</option>`;
+  }
+}
+
+function loadData() {
+  fetch('compiled_odds.json')
+    .then(res => res.json())
+    .then(data => {
+      allData = data;
+    });
+}
+
+// 查詢亞洲盤
+function searchAsian() {
+  const line = parseFloat(document.getElementById('asian-line').value);
+  const minHome = parseFloat(document.getElementById('asian-home-odds-min').value) || -Infinity;
+  const maxHome = parseFloat(document.getElementById('asian-home-odds-max').value) || Infinity;
+  const minAway = parseFloat(document.getElementById('asian-away-odds-min').value) || -Infinity;
+  const maxAway = parseFloat(document.getElementById('asian-away-odds-max').value) || Infinity;
+
+  const filtered = allData.filter(row =>
+    parseFloat(row.handicap_open_line) === line &&
+    row.handicap_open_home_odds >= minHome &&
+    row.handicap_open_home_odds <= maxHome &&
+    row.handicap_open_away_odds >= minAway &&
+    row.handicap_open_away_odds <= maxAway
+  );
+  renderResult('asian-result', filtered, 'asian');
+}
+
+// 查詢大小球
+function searchOU() {
+  const line = parseFloat(document.getElementById('ou-line').value);
+  const minOver = parseFloat(document.getElementById('ou-over-odds-min').value) || -Infinity;
+  const maxOver = parseFloat(document.getElementById('ou-over-odds-max').value) || Infinity;
+  const minUnder = parseFloat(document.getElementById('ou-under-odds-min').value) || -Infinity;
+  const maxUnder = parseFloat(document.getElementById('ou-under-odds-max').value) || Infinity;
+
+  const filtered = allData.filter(row =>
+    parseFloat(row.ou_open_line) === line &&
+    row.ou_open_over_odds >= minOver &&
+    row.ou_open_over_odds <= maxOver &&
+    row.ou_open_under_odds >= minUnder &&
+    row.ou_open_under_odds <= maxUnder
+  );
+  renderResult('ou-result', filtered, 'ou');
+}
+
+// 統一渲染結果
+function renderResult(domId, data, mode) {
+  let html = '';
+  // 統計區
+  html += `<div class="stat-box">總場數：${data.length}</div>`;
+
+  // 不同模式展示統計
+  if (mode === 'asian') {
+    const win = data.filter(r => r.result === '主贏盤').length;
+    const lose = data.filter(r => r.result === '主輸盤').length;
+    const draw = data.filter(r => r.result === '走水').length;
+    html += `<div class="stat-box">主贏盤：${win}　主輸盤：${lose}　走水：${draw}</div>`;
+  } else {
+    const win = data.filter(r => r.result === '大').length;
+    const lose = data.filter(r => r.result === '細').length;
+    html += `<div class="stat-box">大球：${win}　細球：${lose}</div>`;
   }
 
-  const rows = data.map((item) => [
-    item.league,
-    item.season,
-    item.match_date,
-    item.home_team,
-    item.away_team,
-    item.final_score,
-    item.handicap_open_line,
-    item.handicap_open_home_odds,
-    item.handicap_open_away_odds,
-    item.handicap_close_line,
-    item.handicap_close_home_odds,
-    item.handicap_close_away_odds,
-    item.result,
-  ]);
-
-  $('#resultsTable').DataTable({
-    data: rows,
-    responsive: true,
-    pageLength: 10,
-    lengthMenu: [10, 25, 50, 100],
-    language: {
-      search: '搜尋:',
-      lengthMenu: '每頁顯示 _MENU_ 條',
-      info: '顯示第 _START_ 至 _END_ 條，共 _TOTAL_ 條',
-      paginate: {
-        previous: '上一頁',
-        next: '下一頁',
-      },
-      infoEmpty: '沒有符合條件的數據',
-      zeroRecords: '沒有符合條件的比賽',
-    },
-    columnDefs: [
-      { responsivePriority: 1, targets: 0 }, // league
-      { responsivePriority: 2, targets: 3 }, // home team
-      { responsivePriority: 3, targets: 4 }, // away team
-      { responsivePriority: 4, targets: 5 }, // final score
-    ],
-  });
-}
-
-function parseNumberInput(value) {
-  const num = parseFloat(value);
-  return isNaN(num) ? null : num;
-}
-
-function filterData() {
-  const minOpenLine = parseNumberInput($('#minOpenLine').val());
-  const maxOpenLine = parseNumberInput($('#maxOpenLine').val());
-  const minOpenHomeOdds = parseNumberInput($('#minOpenHomeOdds').val());
-  const maxOpenHomeOdds = parseNumberInput($('#maxOpenHomeOdds').val());
-  const minOpenAwayOdds = parseNumberInput($('#minOpenAwayOdds').val());
-  const maxOpenAwayOdds = parseNumberInput($('#maxOpenAwayOdds').val());
-  const minCloseLine = parseNumberInput($('#minCloseLine').val());
-  const maxCloseLine = parseNumberInput($('#maxCloseLine').val());
-  const minCloseHomeOdds = parseNumberInput($('#minCloseHomeOdds').val());
-  const maxCloseHomeOdds = parseNumberInput($('#maxCloseHomeOdds').val());
-  const minCloseAwayOdds = parseNumberInput($('#minCloseAwayOdds').val());
-  const maxCloseAwayOdds = parseNumberInput($('#maxCloseAwayOdds').val());
-
-  const filtered = dataset.filter((item) => {
-    const openLine = parseFloat(item.handicap_open_line);
-    const openHomeOdds = parseFloat(item.handicap_open_home_odds);
-    const openAwayOdds = parseFloat(item.handicap_open_away_odds);
-    const closeLine = parseFloat(item.handicap_close_line);
-    const closeHomeOdds = parseFloat(item.handicap_close_home_odds);
-    const closeAwayOdds = parseFloat(item.handicap_close_away_odds);
-
-    if (minOpenLine !== null && !(openLine >= minOpenLine)) return false;
-    if (maxOpenLine !== null && !(openLine <= maxOpenLine)) return false;
-    if (minOpenHomeOdds !== null && !(openHomeOdds >= minOpenHomeOdds)) return false;
-    if (maxOpenHomeOdds !== null && !(openHomeOdds <= maxOpenHomeOdds)) return false;
-    if (minOpenAwayOdds !== null && !(openAwayOdds >= minOpenAwayOdds)) return false;
-    if (maxOpenAwayOdds !== null && !(openAwayOdds <= maxOpenAwayOdds)) return false;
-    if (minCloseLine !== null && !(closeLine >= minCloseLine)) return false;
-    if (maxCloseLine !== null && !(closeLine <= maxCloseLine)) return false;
-    if (minCloseHomeOdds !== null && !(closeHomeOdds >= minCloseHomeOdds)) return false;
-    if (maxCloseHomeOdds !== null && !(closeHomeOdds <= maxCloseHomeOdds)) return false;
-    if (minCloseAwayOdds !== null && !(closeAwayOdds >= minCloseAwayOdds)) return false;
-    if (maxCloseAwayOdds !== null && !(closeAwayOdds <= maxCloseAwayOdds)) return false;
-    return true;
-  });
-  updateSummary(filtered);
-  initDataTable(filtered);
-}
-
-function updateSummary(data) {
-  const summaryEl = $('#summaryText');
-  if (data.length === 0) {
-    summaryEl.text('沒有符合條件的比賽。');
-    return;
+  // 結果table
+  html += `<div class="table-wrapper"><table class="result-table"><thead><tr>`;
+  if (mode === 'asian') {
+    html += `<th>比賽日期</th><th>主隊</th><th>客隊</th><th>比分</th><th>初盤盤口</th><th>主賠</th><th>客賠</th><th>結果</th>`;
+  } else {
+    html += `<th>比賽日期</th><th>主隊</th><th>客隊</th><th>比分</th><th>初盤盤口</th><th>大賠</th><th>細賠</th><th>結果</th>`;
   }
-  let homeWins = 0;
-  let draws = 0;
-  let awayWins = 0;
-  data.forEach((item) => {
-    if (item.result === 'H') homeWins++;
-    else if (item.result === 'D') draws++;
-    else if (item.result === 'A') awayWins++;
+  html += `</tr></thead><tbody>`;
+  data.forEach(row => {
+    html += '<tr>';
+    html += `<td>${row.match_date || ''}</td>`;
+    html += `<td>${row.home_team || ''}</td>`;
+    html += `<td>${row.away_team || ''}</td>`;
+    html += `<td>${row.final_score || ''}</td>`;
+    if (mode === 'asian') {
+      html += `<td>${row.handicap_open_line}</td><td>${row.handicap_open_home_odds}</td><td>${row.handicap_open_away_odds}</td><td>${row.result || ''}</td>`;
+    } else {
+      html += `<td>${row.ou_open_line}</td><td>${row.ou_open_over_odds}</td><td>${row.ou_open_under_odds}</td><td>${row.result || ''}</td>`;
+    }
+    html += '</tr>';
   });
-  const total = data.length;
-  const homePct = ((homeWins / total) * 100).toFixed(1);
-  const drawPct = ((draws / total) * 100).toFixed(1);
-  const awayPct = ((awayWins / total) * 100).toFixed(1);
-  const summaryHtml = `符合條件的比賽共有 <strong>${total}</strong> 場。<br/>主隊勝出：<strong>${homeWins}</strong> 場 (${homePct}%); 平局：<strong>${draws}</strong> 場 (${drawPct}%); 客隊勝出：<strong>${awayWins}</strong> 場 (${awayPct}%)`;
-  summaryEl.html(summaryHtml);
+  html += `</tbody></table></div>`;
+
+  document.getElementById(domId).innerHTML = html;
 }
 
-$(document).ready(function () {
+window.onload = function() {
+  generateAsianLines();
+  generateOULines();
+  showTab('asian');
   loadData();
-  $('#filterButton').on('click', function () {
-    filterData();
-  });
-});
+};
