@@ -15,6 +15,7 @@ function showTab(tab) {
   }
 }
 
+// 盤口下拉
 function generateAsianLines() {
   const select = document.getElementById('asian-line');
   select.innerHTML = '';
@@ -23,7 +24,6 @@ function generateAsianLines() {
     select.innerHTML += `<option value="${i}">${display}</option>`;
   }
 }
-
 function generateOULines() {
   const select = document.getElementById('ou-line');
   select.innerHTML = '';
@@ -40,41 +40,56 @@ function loadData() {
     });
 }
 
+// 查詢亞洲盤
 function searchAsian() {
+  const mode = document.getElementById('asian-mode').value; // open/close
+  const lineField = mode === 'open' ? 'handicap_open_line' : 'handicap_close_line';
+  const homeOddsField = mode === 'open' ? 'handicap_open_home_odds' : 'handicap_close_home_odds';
+  const awayOddsField = mode === 'open' ? 'handicap_open_away_odds' : 'handicap_close_away_odds';
   const line = parseFloat(document.getElementById('asian-line').value);
   const minHome = parseFloat(document.getElementById('asian-home-odds-min').value) || -Infinity;
   const maxHome = parseFloat(document.getElementById('asian-home-odds-max').value) || Infinity;
   const minAway = parseFloat(document.getElementById('asian-away-odds-min').value) || -Infinity;
   const maxAway = parseFloat(document.getElementById('asian-away-odds-max').value) || Infinity;
+
   const filtered = allData.filter(row =>
-    parseFloat(row.handicap_open_line) === line &&
-    row.handicap_open_home_odds >= minHome &&
-    row.handicap_open_home_odds <= maxHome &&
-    row.handicap_open_away_odds >= minAway &&
-    row.handicap_open_away_odds <= maxAway
+    parseFloat(row[lineField]) === line &&
+    row[homeOddsField] >= minHome &&
+    row[homeOddsField] <= maxHome &&
+    row[awayOddsField] >= minAway &&
+    row[awayOddsField] <= maxAway
   );
-  renderResult('asian-result', filtered, 'asian');
+  renderResult('asian-result', filtered, 'asian', mode);
 }
 
+// 查詢大小球
 function searchOU() {
+  const mode = document.getElementById('ou-mode').value;
+  const lineField = mode === 'open' ? 'ou_open_line' : 'ou_close_line';
+  const overOddsField = mode === 'open' ? 'ou_open_over_odds' : 'ou_close_over_odds';
+  const underOddsField = mode === 'open' ? 'ou_open_under_odds' : 'ou_close_under_odds';
   const line = parseFloat(document.getElementById('ou-line').value);
   const minOver = parseFloat(document.getElementById('ou-over-odds-min').value) || -Infinity;
   const maxOver = parseFloat(document.getElementById('ou-over-odds-max').value) || Infinity;
   const minUnder = parseFloat(document.getElementById('ou-under-odds-min').value) || -Infinity;
   const maxUnder = parseFloat(document.getElementById('ou-under-odds-max').value) || Infinity;
+
   const filtered = allData.filter(row =>
-    parseFloat(row.ou_open_line) === line &&
-    row.ou_open_over_odds >= minOver &&
-    row.ou_open_over_odds <= maxOver &&
-    row.ou_open_under_odds >= minUnder &&
-    row.ou_open_under_odds <= maxUnder
+    parseFloat(row[lineField]) === line &&
+    row[overOddsField] >= minOver &&
+    row[overOddsField] <= maxOver &&
+    row[underOddsField] >= minUnder &&
+    row[underOddsField] <= maxUnder
   );
-  renderResult('ou-result', filtered, 'ou');
+  renderResult('ou-result', filtered, 'ou', mode);
 }
 
-function renderResult(domId, data, mode) {
+// 統一渲染結果
+function renderResult(domId, data, mode, lineType) {
   let html = '';
-  html += `<div class="stat-box">總場數：${data.length}</div>`;
+  // 標示初盤/終盤
+  const modeLabel = (lineType === 'open' ? '初盤' : '終盤');
+  html += `<div class="stat-box">${modeLabel}｜總場數：${data.length}</div>`;
   if (mode === 'asian') {
     const win = data.filter(r => r.result === '主贏盤').length;
     const lose = data.filter(r => r.result === '主輸盤').length;
@@ -87,9 +102,9 @@ function renderResult(domId, data, mode) {
   }
   html += `<div class="table-wrapper"><table class="result-table"><thead><tr>`;
   if (mode === 'asian') {
-    html += `<th>比賽日期</th><th>主隊</th><th>客隊</th><th>比分</th><th>初盤盤口</th><th>主賠</th><th>客賠</th><th>結果</th>`;
+    html += `<th>比賽日期</th><th>主隊</th><th>客隊</th><th>比分</th><th>${modeLabel}盤口</th><th>主賠</th><th>客賠</th><th>結果</th>`;
   } else {
-    html += `<th>比賽日期</th><th>主隊</th><th>客隊</th><th>比分</th><th>初盤盤口</th><th>大賠</th><th>細賠</th><th>結果</th>`;
+    html += `<th>比賽日期</th><th>主隊</th><th>客隊</th><th>比分</th><th>${modeLabel}盤口</th><th>大賠</th><th>細賠</th><th>結果</th>`;
   }
   html += `</tr></thead><tbody>`;
   data.forEach(row => {
@@ -99,9 +114,15 @@ function renderResult(domId, data, mode) {
     html += `<td>${row.away_team || ''}</td>`;
     html += `<td>${row.final_score || ''}</td>`;
     if (mode === 'asian') {
-      html += `<td>${row.handicap_open_line}</td><td>${row.handicap_open_home_odds}</td><td>${row.handicap_open_away_odds}</td><td>${row.result || ''}</td>`;
+      html += `<td>${row[lineType === 'open' ? 'handicap_open_line' : 'handicap_close_line']}</td>`;
+      html += `<td>${row[lineType === 'open' ? 'handicap_open_home_odds' : 'handicap_close_home_odds']}</td>`;
+      html += `<td>${row[lineType === 'open' ? 'handicap_open_away_odds' : 'handicap_close_away_odds']}</td>`;
+      html += `<td>${row.result || ''}</td>`;
     } else {
-      html += `<td>${row.ou_open_line}</td><td>${row.ou_open_over_odds}</td><td>${row.ou_open_under_odds}</td><td>${row.result || ''}</td>`;
+      html += `<td>${row[lineType === 'open' ? 'ou_open_line' : 'ou_close_line']}</td>`;
+      html += `<td>${row[lineType === 'open' ? 'ou_open_over_odds' : 'ou_close_over_odds']}</td>`;
+      html += `<td>${row[lineType === 'open' ? 'ou_open_under_odds' : 'ou_close_under_odds']}</td>`;
+      html += `<td>${row.result || ''}</td>`;
     }
     html += '</tr>';
   });
@@ -109,9 +130,27 @@ function renderResult(domId, data, mode) {
   document.getElementById(domId).innerHTML = html;
 }
 
+// 標籤動態切換
+function updateAsianLabels() {
+  const mode = document.getElementById('asian-mode').value;
+  document.getElementById('asian-line-label').textContent = mode === 'open' ? '讓球盤口' : '終盤盤口';
+  document.getElementById('asian-home-odds-label').textContent = mode === 'open' ? '主隊賠率' : '終盤主隊賠率';
+  document.getElementById('asian-away-odds-label').textContent = mode === 'open' ? '客隊賠率' : '終盤客隊賠率';
+}
+function updateOULabels() {
+  const mode = document.getElementById('ou-mode').value;
+  document.getElementById('ou-line-label').textContent = mode === 'open' ? '大小球盤口' : '終盤盤口';
+  document.getElementById('ou-over-odds-label').textContent = mode === 'open' ? '大球賠率' : '終盤大賠率';
+  document.getElementById('ou-under-odds-label').textContent = mode === 'open' ? '細球賠率' : '終盤細賠率';
+}
+
 window.onload = function() {
   generateAsianLines();
   generateOULines();
   showTab('asian');
   loadData();
+  document.getElementById('asian-mode').onchange = updateAsianLabels;
+  document.getElementById('ou-mode').onchange = updateOULabels;
+  updateAsianLabels();
+  updateOULabels();
 };
