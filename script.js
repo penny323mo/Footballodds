@@ -263,3 +263,12 @@ function calculateAsianStats(filtered) {
   document.getElementById("asian-stats").innerText =
     `主贏盤 ${win} 場 (${winPct}%)　主輸盤 ${lose} 場 (${losePct}%)　走水 ${draw} 場 (${drawPct}%)`;
 }
+
+
+document.addEventListener("DOMContentLoaded", function() {
+  loadData();
+  generateAsianLines("asian-open-line");
+  generateAsianLines("asian-close-line");
+  generateOULines("ou-open-line");
+  generateOULines("ou-close-line");
+});
