@@ -2,14 +2,16 @@
 let allData = [];
 
 function showTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(tabDiv => tabDiv.classList.remove('active'));
+  document.getElementById('asian-tab').classList.remove('active');
+  document.getElementById('ou-tab').classList.remove('active');
+  document.getElementById('asian-tab-btn').classList.remove('active');
+  document.getElementById('ou-tab-btn').classList.remove('active');
   if (tab === 'asian') {
-    document.getElementById('asian-tab-btn').classList.add('active');
     document.getElementById('asian-tab').classList.add('active');
+    document.getElementById('asian-tab-btn').classList.add('active');
   } else {
-    document.getElementById('ou-tab-btn').classList.add('active');
     document.getElementById('ou-tab').classList.add('active');
+    document.getElementById('ou-tab-btn').classList.add('active');
   }
 }
 
@@ -38,14 +40,12 @@ function loadData() {
     });
 }
 
-// 查詢亞洲盤
 function searchAsian() {
   const line = parseFloat(document.getElementById('asian-line').value);
   const minHome = parseFloat(document.getElementById('asian-home-odds-min').value) || -Infinity;
   const maxHome = parseFloat(document.getElementById('asian-home-odds-max').value) || Infinity;
   const minAway = parseFloat(document.getElementById('asian-away-odds-min').value) || -Infinity;
   const maxAway = parseFloat(document.getElementById('asian-away-odds-max').value) || Infinity;
-
   const filtered = allData.filter(row =>
     parseFloat(row.handicap_open_line) === line &&
     row.handicap_open_home_odds >= minHome &&
@@ -56,14 +56,12 @@ function searchAsian() {
   renderResult('asian-result', filtered, 'asian');
 }
 
-// 查詢大小球
 function searchOU() {
   const line = parseFloat(document.getElementById('ou-line').value);
   const minOver = parseFloat(document.getElementById('ou-over-odds-min').value) || -Infinity;
   const maxOver = parseFloat(document.getElementById('ou-over-odds-max').value) || Infinity;
   const minUnder = parseFloat(document.getElementById('ou-under-odds-min').value) || -Infinity;
   const maxUnder = parseFloat(document.getElementById('ou-under-odds-max').value) || Infinity;
-
   const filtered = allData.filter(row =>
     parseFloat(row.ou_open_line) === line &&
     row.ou_open_over_odds >= minOver &&
@@ -74,13 +72,9 @@ function searchOU() {
   renderResult('ou-result', filtered, 'ou');
 }
 
-// 統一渲染結果
 function renderResult(domId, data, mode) {
   let html = '';
-  // 統計區
   html += `<div class="stat-box">總場數：${data.length}</div>`;
-
-  // 不同模式展示統計
   if (mode === 'asian') {
     const win = data.filter(r => r.result === '主贏盤').length;
     const lose = data.filter(r => r.result === '主輸盤').length;
@@ -91,8 +85,6 @@ function renderResult(domId, data, mode) {
     const lose = data.filter(r => r.result === '細').length;
     html += `<div class="stat-box">大球：${win}　細球：${lose}</div>`;
   }
-
-  // 結果table
   html += `<div class="table-wrapper"><table class="result-table"><thead><tr>`;
   if (mode === 'asian') {
     html += `<th>比賽日期</th><th>主隊</th><th>客隊</th><th>比分</th><th>初盤盤口</th><th>主賠</th><th>客賠</th><th>結果</th>`;
@@ -114,7 +106,6 @@ function renderResult(domId, data, mode) {
     html += '</tr>';
   });
   html += `</tbody></table></div>`;
-
   document.getElementById(domId).innerHTML = html;
 }
 
