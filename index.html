@@ -1,117 +1,118 @@
 
 <!DOCTYPE html>
+
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>足球賠率篩選工具</title>
-  <link rel="stylesheet" href="styles.css" />
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>足球賠率篩選工具</title>
+<link href="styles.css" rel="stylesheet"/>
 </head>
 <body>
-  <header>
-    <h1>足球賠率篩選工具</h1>
-    <p>根據初盤、終盤所有條件組合快速篩選比賽，並精確統計每一項百分比。</p>
-  </header>
-  <div class="tabs">
-    <button class="tab-btn active" id="asian-tab-btn" onclick="showTab('asian')">亞洲盤查詢</button>
-    <button class="tab-btn" id="ou-tab-btn" onclick="showTab('ou')">大小球查詢</button>
-  </div>
-  <div id="asian-tab" class="tab-content active">
-    <form id="asian-form" onsubmit="event.preventDefault();searchAsian();">
-      <fieldset class="fieldset-group">
-        <legend>初盤條件</legend>
-        <div class="form-row">
-          <div class="form-group">
-            <label>盤口</label>
-            <select id="asian-open-line"></select>
-          </div>
-          <div class="form-group">
-            <label>主隊賠率</label>
-            <input type="number" step="0.01" id="asian-open-home-odds-min" placeholder="最低">
-            <span>～</span>
-            <input type="number" step="0.01" id="asian-open-home-odds-max" placeholder="最高">
-          </div>
-          <div class="form-group">
-            <label>客隊賠率</label>
-            <input type="number" step="0.01" id="asian-open-away-odds-min" placeholder="最低">
-            <span>～</span>
-            <input type="number" step="0.01" id="asian-open-away-odds-max" placeholder="最高">
-          </div>
-        </div>
-      </fieldset>
-      <fieldset class="fieldset-group">
-        <legend>終盤條件</legend>
-        <div class="form-row">
-          <div class="form-group">
-            <label>盤口</label>
-            <select id="asian-close-line"></select>
-          </div>
-          <div class="form-group">
-            <label>主隊賠率</label>
-            <input type="number" step="0.01" id="asian-close-home-odds-min" placeholder="最低">
-            <span>～</span>
-            <input type="number" step="0.01" id="asian-close-home-odds-max" placeholder="最高">
-          </div>
-          <div class="form-group">
-            <label>客隊賠率</label>
-            <input type="number" step="0.01" id="asian-close-away-odds-min" placeholder="最低">
-            <span>～</span>
-            <input type="number" step="0.01" id="asian-close-away-odds-max" placeholder="最高">
-          </div>
-        </div>
-      </fieldset>
-      <button type="submit">搜尋</button>
-    </form>
-    <div id="asian-result"></div>
-  </div>
-  <div id="ou-tab" class="tab-content">
-    <form id="ou-form" onsubmit="event.preventDefault();searchOU();">
-      <fieldset class="fieldset-group">
-        <legend>初盤條件</legend>
-        <div class="form-row">
-          <div class="form-group">
-            <label>盤口</label>
-            <select id="ou-open-line"></select>
-          </div>
-          <div class="form-group">
-            <label>大球賠率</label>
-            <input type="number" step="0.01" id="ou-open-over-odds-min" placeholder="最低">
-            <span>～</span>
-            <input type="number" step="0.01" id="ou-open-over-odds-max" placeholder="最高">
-          </div>
-          <div class="form-group">
-            <label>細球賠率</label>
-            <input type="number" step="0.01" id="ou-open-under-odds-min" placeholder="最低">
-            <span>～</span>
-            <input type="number" step="0.01" id="ou-open-under-odds-max" placeholder="最高">
-          </div>
-        </div>
-      </fieldset>
-      <fieldset class="fieldset-group">
-        <legend>終盤條件</legend>
-        <div class="form-row">
-          <div class="form-group">
-            <label>盤口</label>
-            <select id="ou-close-line"></select>
-          </div>
-          <div class="form-group">
-            <label>大球賠率</label>
-            <input type="number" step="0.01" id="ou-close-over-odds-min" placeholder="最低">
-            <span>～</span>
-            <input type="number" step="0.01" id="ou-close-over-odds-max" placeholder="最高">
-          </div>
-          <div class="form-group">
-            <label>細球賠率</label>
-            <input type="number" step="0.01" id="ou-close-under-odds-min" placeholder="最低">
-            <span>～</span>
-            <input type="number" step="0.01" id="ou-close-under-odds-max" placeholder="最高">
-          </div>
-        </div>
-      </fieldset>
-      <button type="submit">搜尋</button>
-    </form>
-    <div id="ou-result"></div>
-  </div>
-  <script src="script.js"></script>
+<header>
+<h1>足球賠率篩選工具</h1>
+<p>根據初盤、終盤所有條件組合快速篩選比賽，並精確統計每一項百分比。</p>
+</header>
+<div class="tabs">
+<button class="tab-btn active" id="asian-tab-btn" onclick="showTab('asian')">亞洲盤查詢</button>
+<button class="tab-btn" id="ou-tab-btn" onclick="showTab('ou')">大小球查詢</button>
+</div>
+<div class="tab-content active" id="asian-tab">
+<form id="asian-form" onsubmit="event.preventDefault();searchAsian();">
+<fieldset class="fieldset-group">
+<legend>初盤條件</legend>
+<div class="form-row">
+<div class="form-group">
+<label>盤口</label>
+<select id="asian-open-line"></select>
+</div>
+<div class="form-group">
+<label>主隊賠率</label>
+<input id="asian-open-home-odds-min" placeholder="最低" step="0.01" type="number"/>
+<span>～</span>
+<input id="asian-open-home-odds-max" placeholder="最高" step="0.01" type="number"/>
+</div>
+<div class="form-group">
+<label>客隊賠率</label>
+<input id="asian-open-away-odds-min" placeholder="最低" step="0.01" type="number"/>
+<span>～</span>
+<input id="asian-open-away-odds-max" placeholder="最高" step="0.01" type="number"/>
+</div>
+</div>
+</fieldset>
+<fieldset class="fieldset-group">
+<legend>終盤條件</legend>
+<div class="form-row">
+<div class="form-group">
+<label>盤口</label>
+<select id="asian-close-line"></select>
+</div>
+<div class="form-group">
+<label>主隊賠率</label>
+<input id="asian-close-home-odds-min" placeholder="最低" step="0.01" type="number"/>
+<span>～</span>
+<input id="asian-close-home-odds-max" placeholder="最高" step="0.01" type="number"/>
+</div>
+<div class="form-group">
+<label>客隊賠率</label>
+<input id="asian-close-away-odds-min" placeholder="最低" step="0.01" type="number"/>
+<span>～</span>
+<input id="asian-close-away-odds-max" placeholder="最高" step="0.01" type="number"/>
+</div>
+</div>
+</fieldset>
+<button type="submit">搜尋</button>
+</form>
+<div id="asian-result"></div>
+</div>
+<div class="tab-content" id="ou-tab">
+<form id="ou-form" onsubmit="event.preventDefault();searchOU();">
+<fieldset class="fieldset-group">
+<legend>初盤條件</legend>
+<div class="form-row">
+<div class="form-group">
+<label>盤口</label>
+<select id="ou-open-line"></select>
+</div>
+<div class="form-group">
+<label>大球賠率</label>
+<input id="ou-open-over-odds-min" placeholder="最低" step="0.01" type="number"/>
+<span>～</span>
+<input id="ou-open-over-odds-max" placeholder="最高" step="0.01" type="number"/>
+</div>
+<div class="form-group">
+<label>細球賠率</label>
+<input id="ou-open-under-odds-min" placeholder="最低" step="0.01" type="number"/>
+<span>～</span>
+<input id="ou-open-under-odds-max" placeholder="最高" step="0.01" type="number"/>
+</div>
+</div>
+</fieldset>
+<fieldset class="fieldset-group">
+<legend>終盤條件</legend>
+<div class="form-row">
+<div class="form-group">
+<label>盤口</label>
+<select id="ou-close-line"></select>
+</div>
+<div class="form-group">
+<label>大球賠率</label>
+<input id="ou-close-over-odds-min" placeholder="最低" step="0.01" type="number"/>
+<span>～</span>
+<input id="ou-close-over-odds-max" placeholder="最高" step="0.01" type="number"/>
+</div>
+<div class="form-group">
+<label>細球賠率</label>
+<input id="ou-close-under-odds-min" placeholder="最低" step="0.01" type="number"/>
+<span>～</span>
+<input id="ou-close-under-odds-max" placeholder="最高" step="0.01" type="number"/>
+</div>
+</div>
+</fieldset>
+<button type="submit">搜尋</button>
+</form>
+<div id="ou-result"></div>
+</div>
+<script src="script.js"></script>
 </body>
 </html>
