@@ -161,3 +161,33 @@ window.onload = function() {
   showTab('asian');
   loadData();
 };
+
+
+
+function calculateAsianStats(filtered) {
+  let win = 0, lose = 0, draw = 0;
+  filtered.forEach(row => {
+    const line = parseFloat(row.handicap_close_line);
+    const home = parseInt(row.full_home_goals);
+    const away = parseInt(row.full_away_goals);
+    if (isNaN(line) || isNaN(home) || isNaN(away)) return;
+
+    const diff = home - away;
+    const result = diff - line;
+
+    if (result > 0) {
+      win += 1;
+    } else if (result < 0) {
+      lose += 1;
+    } else {
+      draw += 1;
+    }
+  });
+  const total = win + lose + draw;
+  const winPct = total ? (win / total * 100).toFixed(2) : "0.00";
+  const losePct = total ? (lose / total * 100).toFixed(2) : "0.00";
+  const drawPct = total ? (draw / total * 100).toFixed(2) : "0.00";
+
+  document.getElementById("asian-stats").innerText =
+    `主贏盤 ${win} 場 (${winPct}%)　主輸盤 ${lose} 場 (${losePct}%)　走水 ${draw} 場 (${drawPct}%)`;
+}
