@@ -65,39 +65,42 @@ function parseNumberInput(value) {
 }
 
 function filterData() {
-  const minOpenLine = parseNumberInput($('#minOpenLine').val());
-  const maxOpenLine = parseNumberInput($('#maxOpenLine').val());
+  // 取得單一初盤讓球與終盤讓球輸入值（改為非範圍）
+  const openLine = parseNumberInput($('#openLine').val());
   const minOpenHomeOdds = parseNumberInput($('#minOpenHomeOdds').val());
   const maxOpenHomeOdds = parseNumberInput($('#maxOpenHomeOdds').val());
   const minOpenAwayOdds = parseNumberInput($('#minOpenAwayOdds').val());
   const maxOpenAwayOdds = parseNumberInput($('#maxOpenAwayOdds').val());
-  const minCloseLine = parseNumberInput($('#minCloseLine').val());
-  const maxCloseLine = parseNumberInput($('#maxCloseLine').val());
+  const closeLine = parseNumberInput($('#closeLine').val());
   const minCloseHomeOdds = parseNumberInput($('#minCloseHomeOdds').val());
   const maxCloseHomeOdds = parseNumberInput($('#maxCloseHomeOdds').val());
   const minCloseAwayOdds = parseNumberInput($('#minCloseAwayOdds').val());
   const maxCloseAwayOdds = parseNumberInput($('#maxCloseAwayOdds').val());
 
   const filtered = dataset.filter((item) => {
-    const openLine = parseFloat(item.handicap_open_line);
-    const openHomeOdds = parseFloat(item.handicap_open_home_odds);
-    const openAwayOdds = parseFloat(item.handicap_open_away_odds);
-    const closeLine = parseFloat(item.handicap_close_line);
-    const closeHomeOdds = parseFloat(item.handicap_close_home_odds);
-    const closeAwayOdds = parseFloat(item.handicap_close_away_odds);
+    const itemOpenLine = parseFloat(item.handicap_open_line);
+    const openHomeOddsVal = parseFloat(item.handicap_open_home_odds);
+    const openAwayOddsVal = parseFloat(item.handicap_open_away_odds);
+    const itemCloseLine = parseFloat(item.handicap_close_line);
+    const closeHomeOddsVal = parseFloat(item.handicap_close_home_odds);
+    const closeAwayOddsVal = parseFloat(item.handicap_close_away_odds);
 
-    if (minOpenLine !== null && !(openLine >= minOpenLine)) return false;
-    if (maxOpenLine !== null && !(openLine <= maxOpenLine)) return false;
-    if (minOpenHomeOdds !== null && !(openHomeOdds >= minOpenHomeOdds)) return false;
-    if (maxOpenHomeOdds !== null && !(openHomeOdds <= maxOpenHomeOdds)) return false;
-    if (minOpenAwayOdds !== null && !(openAwayOdds >= minOpenAwayOdds)) return false;
-    if (maxOpenAwayOdds !== null && !(openAwayOdds <= maxOpenAwayOdds)) return false;
-    if (minCloseLine !== null && !(closeLine >= minCloseLine)) return false;
-    if (maxCloseLine !== null && !(closeLine <= maxCloseLine)) return false;
-    if (minCloseHomeOdds !== null && !(closeHomeOdds >= minCloseHomeOdds)) return false;
-    if (maxCloseHomeOdds !== null && !(closeHomeOdds <= maxCloseHomeOdds)) return false;
-    if (minCloseAwayOdds !== null && !(closeAwayOdds >= minCloseAwayOdds)) return false;
-    if (maxCloseAwayOdds !== null && !(closeAwayOdds <= maxCloseAwayOdds)) return false;
+    // 初盤讓球若有輸入，要求與資料相近（容許微小誤差）
+    if (openLine !== null && !(Math.abs(itemOpenLine - openLine) < 0.001)) return false;
+    // 初盤主隊賠率區間
+    if (minOpenHomeOdds !== null && !(openHomeOddsVal >= minOpenHomeOdds)) return false;
+    if (maxOpenHomeOdds !== null && !(openHomeOddsVal <= maxOpenHomeOdds)) return false;
+    // 初盤客隊賠率區間
+    if (minOpenAwayOdds !== null && !(openAwayOddsVal >= minOpenAwayOdds)) return false;
+    if (maxOpenAwayOdds !== null && !(openAwayOddsVal <= maxOpenAwayOdds)) return false;
+    // 終盤讓球若有輸入，要求與資料相近（容許微小誤差）
+    if (closeLine !== null && !(Math.abs(itemCloseLine - closeLine) < 0.001)) return false;
+    // 終盤主隊賠率區間
+    if (minCloseHomeOdds !== null && !(closeHomeOddsVal >= minCloseHomeOdds)) return false;
+    if (maxCloseHomeOdds !== null && !(closeHomeOddsVal <= maxCloseHomeOdds)) return false;
+    // 終盤客隊賠率區間
+    if (minCloseAwayOdds !== null && !(closeAwayOddsVal >= minCloseAwayOdds)) return false;
+    if (maxCloseAwayOdds !== null && !(closeAwayOddsVal <= maxCloseAwayOdds)) return false;
     return true;
   });
   updateSummary(filtered);
