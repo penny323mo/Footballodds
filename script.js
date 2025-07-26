@@ -109,14 +109,15 @@ function renderResult(domId, data, mode) {
   // 統計（場數＋百分比）
   const total = data.length;
   if (mode === 'asian') {
-    const win = data.filter(r => r.result === '主贏盤').length;
-    const lose = data.filter(r => r.result === '主輸盤').length;
-    const draw = data.filter(r => r.result === '走水').length;
+    const win = data.filter(r => r.result === 'H').length;
+    const lose = data.filter(r => r.result === 'A').length;
+    const draw = data.filter(r => r.result === 'D').length;
     html += `<div class="stat-box">主贏盤 ${win} 場（${pct(win,total)}）　主輸盤 ${lose} 場（${pct(lose,total)}）　走水 ${draw} 場（${pct(draw,total)}）</div>`;
   } else {
-    const win = data.filter(r => r.result === '大').length;
-    const lose = data.filter(r => r.result === '細').length;
-    const draw = data.filter(r => r.result === '和' || r.result === '走水').length;
+    // 大小球暫時假設 H=大, A=細, D=和
+    const win = data.filter(r => r.result === 'H').length;
+    const lose = data.filter(r => r.result === 'A').length;
+    const draw = data.filter(r => r.result === 'D').length;
     html += `<div class="stat-box">大球 ${win} 場（${pct(win,total)}）　細球 ${lose} 場（${pct(lose,total)}）　和 ${draw} 場（${pct(draw,total)}）</div>`;
   }
   // 比賽列表
