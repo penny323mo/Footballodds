@@ -224,12 +224,15 @@ function evaluateHandicapResult(homeGoals, awayGoals, handicap) {
 }
 
 
+
 function calculateAsianStats(filtered) {
   let win = 0, lose = 0, draw = 0;
   filtered.forEach(row => {
+    if (row.handicap_close_line === null || row.handicap_close_line === undefined) return;
+
     const line = parseFloat(row.handicap_close_line);
-    const home = parseInt(row.full_home_goals);
-    const away = parseInt(row.full_away_goals);
+    const home = parseInt(row.home_score);
+    const away = parseInt(row.away_score);
     if (isNaN(line) || isNaN(home) || isNaN(away)) return;
 
     const verdict = evaluateHandicapResult(home, away, line);
@@ -241,6 +244,16 @@ function calculateAsianStats(filtered) {
     } else {
       lose += 1;
     }
+  });
+  const total = win + lose + draw;
+  const winPct = total ? (win / total * 100).toFixed(2) : "0.00";
+  const losePct = total ? (lose / total * 100).toFixed(2) : "0.00";
+  const drawPct = total ? (draw / total * 100).toFixed(2) : "0.00";
+
+  document.getElementById("asian-stats").innerText =
+    `主贏盤 ${win} 場 (${winPct}%)　主輸盤 ${lose} 場 (${losePct}%)　走水 ${draw} 場 (${drawPct}%)`;
+}
+
   });
   const total = win + lose + draw;
   const winPct = total ? (win / total * 100).toFixed(2) : "0.00";
