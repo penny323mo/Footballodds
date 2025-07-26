@@ -1,36 +1,107 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>大小球查詢</title>
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <nav>
-    <a href="index.html">亞洲盤查詢</a> |
-    <a href="ou.html">大小球查詢</a>
-  </nav>
-  <header>
-    <h1>大小球賠率篩選工具</h1>
-  </header>
-  <main>
-    <section id="filters">
-      <h2>輸入篩選條件</h2>
-      <input id="ouLine" placeholder="初盤大小球盤口" type="number" step="0.25">
-      <input id="minOuOpenOverOdds" placeholder="初盤 Over 賠率 (最低)" type="number" step="0.01">
-      <input id="maxOuOpenOverOdds" placeholder="初盤 Over 賠率 (最高)" type="number" step="0.01">
-      <input id="minOuOpenUnderOdds" placeholder="初盤 Under 賠率 (最低)" type="number" step="0.01">
-      <input id="maxOuOpenUnderOdds" placeholder="初盤 Under 賠率 (最高)" type="number" step="0.01">
-      <input id="minOuCloseOverOdds" placeholder="終盤 Over 賠率 (最低)" type="number" step="0.01">
-      <input id="maxOuCloseOverOdds" placeholder="終盤 Over 賠率 (最高)" type="number" step="0.01">
-      <input id="minOuCloseUnderOdds" placeholder="終盤 Under 賠率 (最低)" type="number" step="0.01">
-      <input id="maxOuCloseUnderOdds" placeholder="終盤 Under 賠率 (最高)" type="number" step="0.01">
-      <button onclick="filterData()">開始篩選</button>
-    </section>
-    <section id="summary"><h2>統計結果</h2><p id="summaryText">尚未篩選。</p></section>
-    <section id="results"><table id="resultsTable"><thead></thead><tbody></tbody></table></section>
-  </main>
-  <script src="script_ou.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>足球大小球賠率篩選工具</title>
+    <!-- DataTables CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.dataTables.min.css"
+    />
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>足球大小球賠率篩選工具</h1>
+      <p>
+        根據大小球盤口及各盤賠率區間快速篩選比賽，並查看統計結果。
+      </p>
+      <!-- 簡單導覽，方便返回亞洲盤頁面 -->
+      <nav>
+        <a href="index.html" style="color: #fff; text-decoration: underline;">返回亞洲盤篩選</a>
+      </nav>
+    </header>
+    <main>
+      <section id="filters">
+        <h2>輸入篩選條件</h2>
+        <div class="filter-grid">
+          <div class="filter-item">
+            <label for="ouLine">大小球盤口</label>
+            <input type="number" step="0.25" id="ouLine" placeholder="無限制" />
+          </div>
+          <div class="filter-item">
+            <label for="minOpenOverOdds">開盤大球賠率 (最低)</label>
+            <input type="number" step="0.01" id="minOpenOverOdds" placeholder="無限制" />
+          </div>
+          <div class="filter-item">
+            <label for="maxOpenOverOdds">開盤大球賠率 (最高)</label>
+            <input type="number" step="0.01" id="maxOpenOverOdds" placeholder="無限制" />
+          </div>
+          <div class="filter-item">
+            <label for="minOpenUnderOdds">開盤小球賠率 (最低)</label>
+            <input type="number" step="0.01" id="minOpenUnderOdds" placeholder="無限制" />
+          </div>
+          <div class="filter-item">
+            <label for="maxOpenUnderOdds">開盤小球賠率 (最高)</label>
+            <input type="number" step="0.01" id="maxOpenUnderOdds" placeholder="無限制" />
+          </div>
+          <div class="filter-item">
+            <label for="minCloseOverOdds">終盤大球賠率 (最低)</label>
+            <input type="number" step="0.01" id="minCloseOverOdds" placeholder="無限制" />
+          </div>
+          <div class="filter-item">
+            <label for="maxCloseOverOdds">終盤大球賠率 (最高)</label>
+            <input type="number" step="0.01" id="maxCloseOverOdds" placeholder="無限制" />
+          </div>
+          <div class="filter-item">
+            <label for="minCloseUnderOdds">終盤小球賠率 (最低)</label>
+            <input type="number" step="0.01" id="minCloseUnderOdds" placeholder="無限制" />
+          </div>
+          <div class="filter-item">
+            <label for="maxCloseUnderOdds">終盤小球賠率 (最高)</label>
+            <input type="number" step="0.01" id="maxCloseUnderOdds" placeholder="無限制" />
+          </div>
+        </div>
+        <button id="filterButton">開始篩選</button>
+      </section>
+      <section id="summary">
+        <h2>統計結果</h2>
+        <p id="summaryText">尚未選擇條件。</p>
+      </section>
+      <section id="results">
+        <h2>比賽列表</h2>
+        <table id="resultsTable" class="display nowrap" style="width:100%">
+          <thead>
+            <tr>
+              <th>聯賽</th>
+              <th>賽季</th>
+              <th>比賽日期</th>
+              <th>主隊</th>
+              <th>客隊</th>
+              <th>最終比分</th>
+              <th>盤口</th>
+              <th>開盤大球賠率</th>
+              <th>開盤小球賠率</th>
+              <th>終盤大球賠率</th>
+              <th>終盤小球賠率</th>
+              <th>結果</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+    </main>
+    <!-- jQuery & DataTables JS -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
+    <!-- Custom Script -->
+    <script src="script_ou.js"></script>
+  </body>
 </html>
