@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>足球賠率篩選工具</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    /* ---------- 全局重置 ---------- */
+    body {
+      margin: 0;
+      background: #f8fafd;
+      font-family: "PingFang TC","Microsoft JhengHei",sans-serif;
+    }
+    a { text-decoration:none; }
+    /* ---------- Header ---------- */
+    .header {
+      background: #1666c1;
+      color: #fff;
+      text-align: center;
+      padding: 24px 0 8px;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 2.4rem;
+      font-weight: bold;
+    }
+    .header .desc {
+      margin: 6px 12px 0;
+      font-size: clamp(0.8rem,1.5vw,1rem);
+      font-weight: 300;
+      white-space: normal;
+      line-height:1.4;
+    }
+    /* ---------- Tabs ---------- */
+    .tabbar {
+      display: flex;
+      background: #e7f0fb;
+      border-bottom: 1px solid #dbe7f5;
+    }
+    .tabbar button {
+      flex: 1;
+      padding: 12px 0;
+      font-size: 1.1rem;
+      font-weight: bold;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      transition: .2s;
+    }
+    .tabbar button.active {
+      color: #1666c1;
+      background: #fff;
+      border-bottom: 3px solid #1666c1;
+    }
+    /* ---------- Timestamp ---------- */
+    .timestamp {
+      text-align: center;
+      color: #444;
+      font-size: .95rem;
+      margin: 10px 0 12px;
+    }
+    /* ---------- Container ---------- */
+    .tabcontent {
+      max-width: 920px;
+      margin: 0 auto 24px;
+      background: #fff;
+      border-radius: 8px;
+      padding: 20px 16px;
+      box-shadow: 0 3px 18px rgba(138,179,233,.16);
+    }
+    @media(max-width:850px) {
+      .tabcontent {
+        padding: 16px 4vw;
+      }
+    }
+    /* ---------- Fieldset & Form ---------- */
+    fieldset {
+      margin-bottom: 18px;
+      border: 1.5px solid #c3daf7;
+      border-radius: 6px;
+      background: #f9fcff;
+      padding: 12px 16px 16px;
+    }
+    legend {
+      padding: 0 8px;
+      font-size: 1.15rem;
+      font-weight: bold;
+      color: #1666c1;
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      margin: 8px 0;
+    }
+    .row label {
+      width: 100px;
+      text-align: right;
+      margin-right: 12px;
+      white-space: nowrap;
+      font-size: 1.02rem;
+    }
+    .input-wrap {
+      flex: 1;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    input, select {
+      border: 1px solid #b8cef1;
+      border-radius: 4px;
+      padding: 6px 8px;
+      font-size: 1rem;
+    }
+    select {
+      min-width: 100px;
+      background: #fff;
+    }
+    .step-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .step-group input {
+      width: 70px;
+    }
+    .btn-wrap button {
+      padding: 4px 8px;
+      font-size: 14px;
+      line-height: 1;
+      background: #fff;
+      border: 1px solid #b8cef1;
+      cursor: pointer;
+    }
+    button.search {
+      display: block;
+      margin: 16px auto 0;
+      padding: 8px 32px;
+      font-size: 1.03rem;
+      border: none;
+      border-radius: 4px;
+      background: #1666c1;
+      color: #fff;
+      cursor: pointer;
+      transition: .2s;
+    }
+    button.search:hover {
+      background: #205b98;
+    }
+    /* ---------- 統計區 ---------- */
+    .stat-area {
+      margin: 28px 0 0;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .stat-row {
+      font-size: 1.3rem;
+      font-weight: bold;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .stat-row .win  { color: #e53b2d; }
+    .stat-row .draw { color: #27a146; }
+    .stat-row .lose { color: #2166d1; }
+    .stat-info {
+      font-size: 1.05rem;
+      margin: 6px 0 10px;
+    }
+    .piebox {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      margin-top: 12px;
+    }
+    .piechart {
+      width: 140px;
+      height: 140px;
+    }
+    .pie-legend div {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+    .pie-legend span {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+    }
+    /* ---------- 表格 ---------- */
+    .table-wrap {
+      width: 100%;
+      overflow-x: hidden;
+      margin-top: 20px;
+    }
+    table {
+      width: 100%;
+      table-layout: fixed;
+      border-collapse: collapse;
+      font-size: 1.05rem;
+    }
+    th, td {
+      border: 1px solid #e5e5e5;
+      padding: 8px 6px;
+      text-align: center;
+      word-wrap: break-word;
+      white-space: normal;
+    }
+    th {
+      background: #f2f6fb;
+    }
+    /* ---------- 手機響應 ---------- */
+    @media (max-width: 768px) {
+      fieldset .row { gap: 6px; }
+      fieldset .row label {
+        width: 100%;
+        text-align: left;
+        margin: 0 0 4px;
+      }
+      fieldset .row .input-wrap { flex: 1 1 100%; }
+      input, select { width: 100%; }
+      .step-group { flex: 1 1 100%; }
+      .step-group input { width: 60%; }
+      .btn-wrap { width: 40%; display: flex; justify-content: space-between; }
+      button.search { width: 100%; }
+      .stat-row { font-size: 1.1rem; gap: 8px; }
+      .piebox { flex-wrap: wrap; gap: 12px; }
+      .piechart { width: 100px; height: 100px; }
+      table { font-size: .85rem; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <h1>足球歷史賠率篩選</h1>
+    <div class="desc">
+      根據初盤、終盤所有條件組合快速篩選比賽，並精確統計每一項百分比。
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabbar">
+    <button id="tab1" class="active" onclick="showTab(0)">亞洲盤查詢</button>
+    <button id="tab2" onclick="showTab(1)">大小球查詢</button>
+    <button id="tab3" onclick="showTab(2)">歐洲盤查詢</button>
+  </div>
+
+  <!-- Timestamp -->
+  <div class="timestamp" id="ts">
+    版本時間：2025/07/31 下午 01:30:00 (GMT+8)
+  </div>
+
+  <!-- ===== 1. 亞洲盤查詢 ===== -->
+  <div class="tabcontent" id="tc1">
+    <form>
+      <fieldset><legend>初盤</legend>
+        <div class="row">
+          <label>盤口：</label>
+          <div class="input-wrap"><select id="AO"></select></div>
+        </div>
+        <div class="row">
+          <label>主隊賠率：</label>
+          <div class="input-wrap">
+            <input type="number" step="0.01" id="OHH" placeholder="精確值"><span>±</span>
+            <div class="step-group">
+              <input type="number" step="0.01" id="OHX" value="0.05">
+              <div class="btn-wrap">
+                <button type="button" onclick="adjErr('OHX',0.05)">▲</button>
+                <button type="button" onclick="adjErr('OHX',-0.05)">▼</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <label>客隊賠率：</label>
+          <div class="input-wrap">
+            <input type="number" step="0.01" id="OAH" placeholder="精確值"><span>±</span>
+            <div class="step-group">
+              <input type="number" step="0.01" id="OAX" value="0.05">
+              <div class="btn-wrap">
+                <button type="button" onclick="adjErr('OAX',0.05)">▲</button>
+                <button type="button" onclick="adjErr('OAX',-0.05)">▼</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+      <fieldset><legend>終盤</legend>
+        <div class="row">
+          <label>盤口：</label>
+          <div class="input-wrap"><select id="AC"></select></div>
+        </div>
+        <div class="row">
+          <label>主隊賠率：</label>
+          <div class="input-wrap">
+            <input type="number" step="0.01" id="CHH" placeholder="精確值"><span>±</span>
+            <div class="step-group">
+              <input type="number" step="0.01" id="CHX" value="0.05">
+              <div class="btn-wrap">
+                <button type="button" onclick="adjErr('CHX',0.05)">▲</button>
+                <button type="button" onclick="adjErr('CHX',-0.05)">▼</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <label>客隊賠率：</label>
+          <div class="input-wrap">
+            <input type="number" step="0.01" id="CAH" placeholder="精確值"><span>±</span>
+            <div class="step-group">
+              <input type="number" step="0.01" id="CAX" value="0.05">
+              <div class="btn-wrap">
+                <button type="button" onclick="adjErr('CAX',0.05)">▲</button>
+                <button type="button" onclick="adjErr('CAX',-0.05)">▼</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+      <button type="button" class="search" onclick="asianSearch()">搜尋</button>
+    </form>
+    <div class="stat-area" id="aStat"></div>
+    <div class="table-wrap">
+      <table id="aTbl">
+        <thead>
+          <tr>
+            <th>賽季</th><th>比賽</th>
+            <th>初盤盤口</th><th>初盤主隊賠率</th><th>初盤客隊賠率</th>
+            <th>終盤盤口</th><th>終盤主隊賠率</th><th>終盤客隊賠率</th><th>盤口勝負</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== 2. 大小球查詢 ===== -->
+  <div class="tabcontent" id="tc2" style="display:none">
+    <form>
+      <fieldset><legend>初盤</legend>
+        <div class="row">
+          <label>盤口：</label>
+          <div class="input-wrap"><select id="OUlineSel"></select></div>
+        </div>
+        <div class="row">
+          <label>大球賠率：</label>
+          <div class="input-wrap">
+            <input type="number" step="0.01" id="OUoMin" placeholder="精確值"><span>±</span>
+            <div class="step-group">
+              <input type="number" step="0.01" id="OUoMax" value="0.05">
+              <div class="btn-wrap">
+                <button type="button" onclick="adjErr('OUoMax',0.05)">▲</button>
+                <button type="button" onclick="adjErr('OUoMax',-0.05)">▼</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <label>細球賠率：</label>
+          <div class="input-wrap">
+            <input type="number" step="0.01" id="OUuMin" placeholder="精確值"><span>±</span>
+            <div class="step-group">
+              <input type="number" step="0.01" id="OUuMax" value="0.05">
+              <div class="btn-wrap">
+                <button type="button" onclick="adjErr('OUuMax',0.05)">▲</button>
+                <button type="button" onclick="adjErr('OUuMax',-0.05)">▼</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+      <fieldset><legend>終盤</legend>
+        <div class="row">
+          <label>盤口：</label>
+          <div class="input-wrap"><select id="OUlineSelC"></select></div>
+        </div>
+        <div class="row">
+          <label>大球賠率：</label>
+          <div class="input-wrap">
+            <input type="number" step="0.01" id="OUoMinC" placeholder="精確值"><span>±</span>
+            <div class="step-group">
+              <input type="number" step="0.01" id="OUoMaxC" value="0.05">
+              <div class="btn-wrap">
+                <button type="button" onclick="adjErr('OUoMaxC',0.05)">▲</button>
+                <button type="button" onclick="adjErr('OUoMaxC',-0.05)">▼</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <label>細球賠率：</label>
+          <div class="input-wrap">
+            <input type="number" step="0.01" id="OUuMinC" placeholder="精確值"><span>±</span>
+            <div class="step-group">
+              <input type="number" step="0.01" id="OUuMaxC" value="0.05">
+              <div class="btn-wrap">
+                <button type="button" onclick="adjErr('OUuMaxC',0.05)">▲</button>
+                <button type="button" onclick="adjErr('OUuMaxC',-0.05)">▼</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+      <button type="button" class="search" onclick="overSearch()">搜尋</button>
+    </form>
+    <div class="stat-area" id="oStat"></div>
+    <div class="table-wrap">
+      <table id="oTbl">
+        <thead>
+          <tr>
+            <th>賽季</th><th>比賽</th><th>盤口</th>
+            <th>初盤大</th><th>初盤細</th>
+            <th>終盤盤口</th><th>終盤大</th><th>終盤細</th><th>結果</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== 3. 歐洲盤查詢 ===== -->
+  <div class="tabcontent" id="tc3" style="display:none">
+    <form>
+      <fieldset><legend>初盤</legend>
+        <div class="row">
+          <label>主勝：</label>
+          <div class="input-wrap">
+            <input type="number" step="0.01" id="EHOM" placeholder="精確值"><span>±</span>
+            <div class="step-group">
+              <input type="number" step="0.01" id="EHOX" value="0.05">
+              <div class="btn-wrap">
+                <button type="button" onclick="adjErr('EHOX',0.05)">▲</button>
+                <button type="button" onclick="adjErr('EHOX',-0.05)">▼</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <label>和局：</label>
+          <div class="input-wrap">
+            <input type="number" step="0.01" id="EDRM" placeholder="精確值"><span>±</span>
+            <div class="step-group">
+              <input type="number" step="0.01" id="EDRX" value="0.05">
+              <div class="btn-wrap">
+                <button type="button" onclick="adjErr('EDRX',0.05)">▲</button>
+                <button type="button" onclick="adjErr('EDRX',-0.05)">▼</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <label>客勝：</label>
+          <div class="input-wrap">
+            <input type="number" step="0.01" id="EAWM" placeholder="精確值"><span>±</span>
+            <div class="step-group">
+              <input type="number" step="0.01" id="EAWX" value="0.05">
+              <div class="btn-wrap">
+                <button type="button" onclick="adjErr('EAWX',0.05)">▲</button>
+                <button type="button" onclick="adjErr('EAWX',-0.05)">▼</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+      <fieldset><legend>終盤</legend>
+        <div class="row">
+          <label>主勝：</label>
+          <div class="input-wrap">
+            <input type="number" step="0.01" id="CEHOM" placeholder="精確值"><span>±</span>
+            <div class="step-group">
+              <input type="number" step="0.01" id="CEHOX" value="0.05">
+              <div class="btn-wrap">
+                <button type="button" onclick="adjErr('CEHOX',0.05)">▲</button>
+                <button type="button" onclick="adjErr('CEHOX',-0.05)">▼</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <label>和局：</label>
+          <div class="input-wrap">
+            <input type="number" step="0.01" id="CEDRM" placeholder="精確值"><span>±</span>
+            <div class="step-group">
+              <input type="number" step="0.01" id="CEDRX" value="0.05">
+              <div class="btn-wrap">
+                <button type="button" onclick="adjErr('CEDRX',0.05)">▲</button>
+                <button type="button" onclick="adjErr('CEDRX',-0.05)">▼</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <label>客勝：</label>
+          <div class="input-wrap">
+            <input type="number" step="0.01" id="CEAWM" placeholder="精確值"><span>±</span>
+            <div class="step-group">
+              <input type="number" step="0.01" id="CEAWX" value="0.05">
+              <div class="btn-wrap">
+                <button type="button" onclick="adjErr('CEAWX',0.05)">▲</button>
+                <button type="button" onclick="adjErr('CEAWX',-0.05)">▼</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+      <button type="button" class="search" onclick="euroSearch()">搜尋</button>
+    </form>
+    <div class="stat-area" id="eStat"></div>
+    <div class="table-wrap">
+      <table id="eTbl">
+        <thead><tr>
+          <th>賽季</th><th>比賽</th><th>初盤(主/和/客)</th><th>終盤(主/和/客)</th>
+          <th>比分</th><th>勝負</th><th>淨勝球</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== JavaScript ===== -->
+  <script>
+    // 切換分頁
+    function showTab(i){
+      ["tab1","tab2","tab3"].forEach((id,idx)=>{
+        document.getElementById(id).classList.toggle("active", idx===i);
+        document.getElementById("tc"+(idx+1)).style.display = idx===i?"":"none";
+      });
+    }
+
+    // 範圍計算 & 百分比
+    function range(valId, errId){
+      const v = parseFloat(document.getElementById(valId).value);
+      const e = parseFloat(document.getElementById(errId).value);
+      if(isNaN(v)) return [null,null];
+      return [v-(isNaN(e)?0:e), v+(isNaN(e)?0:e)];
+    }
+    function pct(n,t){ return t?((n/t*100).toFixed(1)+'%'):'0.0%'; }
+
+    // 誤差增減
+    function adjErr(id, delta){
+      const el = document.getElementById(id);
+      let v = parseFloat(el.value)||0;
+      v = Math.max(0, +(v+delta).toFixed(2));
+      el.value = v.toFixed(2);
+    }
+
+    // 畫饼图
+    function drawPieChart(arr){
+      const tot = arr.reduce((s,x)=>s+x.val,0);
+      if(!tot) return `<svg class="piechart"></svg>`;
+      let cur=0, arc=[], sz=140, r=sz/2-5, cx=sz/2, cy=sz/2;
+      arr.forEach(x=>{
+        const v=x.val/tot;
+        const a1=cur*2*Math.PI, a2=(cur+=v)*2*Math.PI;
+        const x1=cx+r*Math.sin(a1), y1=cy-r*Math.cos(a1);
+        const x2=cx+r*Math.sin(a2), y2=cy-r*Math.cos(a2);
+        const laf=(a2-a1)>Math.PI?1:0;
+        arc.push(`<path d="M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${laf} 1 ${x2},${y2} Z" fill="${x.color}"></path>`);
+      });
+      return `<svg class="piechart" viewBox="0 0 ${sz} ${sz}">${arc.join("")}</svg>`;
+    }
+
+    // 載入 JSON
+    let AData=[], OData=[], EData=[];
+    Promise.all([
+      fetch('asian_handicap.json').then(r=>r.json()).then(j=>AData=j),
+      fetch('over_under.json').then(r=>r.json()).then(j=>OData=j),
+      fetch('european_odds.json').then(r=>r.json()).then(j=>EData=j),
+    ]).then(()=>{
+      initAsian(); initOU(); /* initEU() not needed */
+    });
+
+    // 初始化下拉
+    function initAsian(){
+      const oSet=new Set(), cSet=new Set();
+      AData.forEach(r=>{
+        if(typeof r.AH_open_handicap==='number') oSet.add(r.AH_open_handicap);
+        if(typeof r.AH_close_handicap==='number') cSet.add(r.AH_close_handicap);
+      });
+      sel('AO',oSet); sel('AC',cSet);
+    }
+    function initOU(){
+      const s1=new Set(OData.map(r=>r.OU_line));
+      const s2=new Set(OData.map(r=>r.close_OU_line));
+      sel('OUlineSel',s1); sel('OUlineSelC',s2);
+    }
+    function sel(id,set){
+      const arr=[...set].sort((a,b)=>a-b);
+      const html=['<option value="">--</option>'];
+      arr.forEach(v=>html.push(`<option value="${v}">${v}</option>`));
+      document.getElementById(id).innerHTML = html.join('');
+    }
+
+    // 亚洲盤搜尋
+    function asianSearch(){
+      const [hMin,hMax]=range('OHH','OHX'),
+            [aMin,aMax]=range('OAH','OAX'),
+            [hMinC,hMaxC]=range('CHH','CHX'),
+            [aMinC,aMaxC]=range('CAH','CAX'),
+            selO=document.getElementById('AO').value,
+            selC=document.getElementById('AC').value;
+      let res=AData.filter(r=>{
+        if(selO&&r.AH_open_handicap!=+selO) return false;
+        if(selC&&r.AH_close_handicap!=+selC) return false;
+        if(hMin!=null&&(r.AH_open_home_odds<hMin||r.AH_open_home_odds>hMax)) return false;
+        if(aMin!=null&&(r.AH_open_away_odds<aMin||r.AH_open_away_odds>aMax)) return false;
+        if(hMinC!=null&&(r.AH_close_home_odds<hMinC||r.AH_close_home_odds>hMaxC)) return false;
+        if(aMinC!=null&&(r.AH_close_away_odds<aMinC||r.AH_close_away_odds>aMaxC)) return false;
+        return true;
+      });
+      let win=0, draw=0, lose=0;
+      const tb=document.querySelector('#aTbl tbody');
+      tb.innerHTML='';
+      res.forEach(r=>{
+        const [hs,as]=r.ft_score.split('-').map(Number);
+        const diff=(hs+r.AH_close_handicap)-as;
+        const out=diff>0?'贏盤':diff<0?'輸盤':'和盤';
+        if(out==='贏盤') win++;
+        else if(out==='輸盤') lose++;
+        else draw++;
+        tb.insertAdjacentHTML('beforeend',`
+          <tr>
+            <td>${r.season}</td>
+            <td>${r.home_team} vs ${r.away_team} (${r.ft_score})</td>
+            <td>${r.AH_open_handicap}</td>
+            <td>${r.AH_open_home_odds}</td>
+            <td>${r.AH_open_away_odds}</td>
+            <td>${r.AH_close_handicap}</td>
+            <td>${r.AH_close_home_odds}</td>
+            <td>${r.AH_close_away_odds}</td>
+            <td>${out}</td>
+          </tr>`);
+      });
+      const tot=res.length;
+      document.getElementById('aStat').innerHTML=`
+        <div class="stat-row">
+          <span class="win">贏盤 ${win} (${pct(win,tot)})</span>
+          <span class="draw">和盤 ${draw} (${pct(draw,tot)})</span>
+          <span class="lose">輸盤 ${lose} (${pct(lose,tot)})</span>
+        </div>
+        <div class="stat-info">場數：${tot}</div>
+        <div class="piebox">
+          ${drawPieChart([
+            {label:'贏盤', val:win, color:'#e53b2d'},
+            {label:'和盤', val:draw, color:'#27a146'},
+            {label:'輸盤', val:lose, color:'#2166d1'}
+          ])}
+          <div class="pie-legend">
+            <div><span style="background:#e53b2d"></span>贏盤</div>
+            <div><span style="background:#27a146"></span>和盤</div>
+            <div><span style="background:#2166d1"></span>輸盤</div>
+          </div>
+        </div>`;
+    }
+
+    // 大小球搜尋
+    // —— 重寫「大小球」搜尋函式 ——  
+function overSearch() {
+  const sel   = document.getElementById('OUlineSel').value,
+        selC  = document.getElementById('OUlineSelC').value;
+  // 用 range() 計算「精確值 ± 誤差」上下限
+  const [oMin2, oMax2] = range('OUoMin','OUoMax'),
+        [uMin2, uMax2] = range('OUuMin','OUuMax'),
+        [oMinC2, oMaxC2] = range('OUoMinC','OUoMaxC'),
+        [uMinC2, uMaxC2] = range('OUuMinC','OUuMaxC');
+
+  const res = OData.filter(r => {
+    if (sel   && r.OU_line             != +sel  ) return false;
+    if (selC  && r.close_OU_line       != +selC ) return false;
+    if (oMin2 != null && r.OU_open_over_odds  <  oMin2  ) return false;
+    if (oMax2 != null && r.OU_open_over_odds  >  oMax2  ) return false;
+    if (uMin2 != null && r.OU_open_under_odds <  uMin2  ) return false;
+    if (uMax2 != null && r.OU_open_under_odds >  uMax2  ) return false;
+    if (oMinC2!= null && r.OU_close_over_odds <  oMinC2 ) return false;
+    if (oMaxC2!= null && r.OU_close_over_odds >  oMaxC2 ) return false;
+    if (uMinC2!= null && r.OU_close_under_odds<  uMinC2 ) return false;
+    if (uMaxC2!= null && r.OU_close_under_odds>  uMaxC2 ) return false;
+    return true;
+  });
+  // …（後續統計 & 表格填值不變）…
+}
+      let over=0, under=0, push=0;
+      const tb=document.querySelector('#oTbl tbody');
+      tb.innerHTML='';
+      res.forEach(r=>{
+        const sum=r.ft_score.split('-').reduce((s,x)=>s+ +x,0),
+              out=sum>r.close_OU_line?'大球':sum<r.close_OU_line?'小球':'走盤';
+        if(out==='大球') over++;
+        else if(out==='小球') under++;
+        else push++;
+        tb.insertAdjacentHTML('beforeend',`
+          <tr>
+            <td>${r.season}</td>
+            <td>${r.home_team} vs ${r.away_team} (${r.ft_score})</td>
+            <td>${r.OU_line}</td>
+            <td>${r.OU_open_over_odds}</td>
+            <td>${r.OU_open_under_odds}</td>
+            <td>${r.close_OU_line}</td>
+            <td>${r.OU_close_over_odds}</td>
+            <td>${r.OU_close_under_odds}</td>
+            <td>${out}</td>
+          </tr>`);
+      });
+      const tot=res.length;
+      document.getElementById('oStat').innerHTML=`
+        <div class="stat-row">
+          <span class="win">大球 ${over} (${pct(over,tot)})</span>
+          <span class="draw">走盤 ${push} (${pct(push,tot)})</span>
+          <span class="lose">小球 ${under} (${pct(under,tot)})</span>
+        </div>
+        <div class="stat-info">場數：${tot}</div>
+        <div class="piebox">`
+        + drawPieChart([
+            {label:'大球', val:over, color:'#e53b2d'},
+            {label:'走盤', val:push, color:'#27a146'},
+            {label:'小球', val:under, color:'#2166d1'}
+          ]) +
+        `<div class="pie-legend">
+           <div><span style="background:#e53b2d"></span>大球</div>
+           <div><span style="background:#27a146"></span>走盤</div>
+           <div><span style="background:#2166d1"></span>小球</div>
+         </div>
+        </div>`;
+    }
+
+    // 欧洲盘搜尋
+    // —— 重寫「歐洲盤」搜尋函式 ——  
+function euroSearch() {
+  // 用 range() 計算「精確值 ± 誤差」上下限
+  const [hMin,  hMax ] = range('EHOM','EHOX'),
+        [dMin,  dMax ] = range('EDRM','EDRX'),
+        [aMin,  aMax ] = range('EAWM','EAWX'),
+        [hMinC, hMaxC] = range('CEHOM','CEHOX'),
+        [dMinC, dMaxC] = range('CEDRM','CEDRX'),
+        [aMinC, aMaxC] = range('CEAWM','CEAWX');
+
+  const res = EData.filter(r => {
+    // 初盤
+    if (hMin  != null && r['1X2_open_home_odds'] <  hMin ) return false;
+    if (hMax  != null && r['1X2_open_home_odds'] >  hMax ) return false;
+    if (dMin  != null && r['1X2_open_draw_odds'] <  dMin ) return false;
+    if (dMax  != null && r['1X2_open_draw_odds'] >  dMax ) return false;
+    if (aMin  != null && r['1X2_open_away_odds'] <  aMin ) return false;
+    if (aMax  != null && r['1X2_open_away_odds'] >  aMax ) return false;
+    // 終盤
+    if (hMinC != null && r['1X2_close_home_odds'] <  hMinC) return false;
+    if (hMaxC != null && r['1X2_close_home_odds'] >  hMaxC) return false;
+    if (dMinC != null && r['1X2_close_draw_odds'] <  dMinC) return false;
+    if (dMaxC != null && r['1X2_close_draw_odds'] >  dMaxC) return false;
+    if (aMinC != null && r['1X2_close_away_odds'] <  aMinC) return false;
+    if (aMaxC != null && r['1X2_close_away_odds'] >  aMaxC) return false;
+    return true;
+  });
+  // …（後續統計 & 表格填值不變）…
+}
+      let home=0, draw=0, away=0, d1=0, d2=0, d3=0;
+      const tb=document.querySelector('#eTbl tbody');
+      tb.innerHTML='';
+      res.forEach(r=>{
+        const [h,a]=r.ft_score.split('-').map(Number), diff=h-a;
+        if(diff>0){ home++; if(diff===1)d1++; else if(diff===2)d2++; else d3++; }
+        else if(diff<0) away++;
+        else draw++;
+        tb.insertAdjacentHTML('beforeend',`
+          <tr>
+            <td>${r.season}</td>
+            <td>${r.home_team} vs ${r.away_team}</td>
+            <td>${r['1X2_open_home_odds']}/${r['1X2_open_draw_odds']}/${r['1X2_open_away_odds']}</td>
+            <td>${r['1X2_close_home_odds']}/${r['1X2_close_draw_odds']}/${r['1X2_close_away_odds']}</td>
+            <td>${r.ft_score}</td>
+            <td>${diff>0?'主勝':diff<0?'客勝':'和局'}</td>
+            <td>${diff}</td>
+          </tr>`);
+      });
+      const tot=res.length;
+      document.getElementById('eStat').innerHTML=`
+        <div class="stat-row">
+          <span class="win">主勝 ${home} (${pct(home,tot)})</span>
+          <span class="draw">和局 ${draw} (${pct(draw,tot)})</span>
+          <span class="lose">客勝 ${away} (${pct(away,tot)})</span>
+        </div>
+        <div class="stat-info">
+          場數：${tot}<br>
+          主勝淨勝球 ➜ 1球:${d1}  2球:${d2}  3+球:${d3}
+        </div>
+        <div class="piebox">
+          ${drawPieChart([
+            {label:'主勝', val:home, color:'#e53b2d'},
+            {label:'和局', val:draw, color:'#27a146'},
+            {label:'客勝', val:away, color:'#2166d1'}
+          ])}
+          <div class="pie-legend">
+            <div><span style="background:#e53b2d"></span>主勝</div>
+            <div><span style="background:#27a146"></span>和局</div>
+            <div><span style="background:#2166d1"></span>客勝</div>
+          </div>
+        </div>`;
+    }
+  </script>
+</body>
+</html>
