@@ -208,6 +208,21 @@ footer{color:var(--mut2);font-size:12px;text-align:center;margin-top:40px;line-h
 .fchip.fW{background:var(--green);color:#04130d}
 .fchip.fD{background:var(--bg2);border:1px solid var(--line2);color:var(--mut)}
 .fchip.fL{background:var(--red);color:#fff}
+.crow{display:grid;grid-template-columns:auto 64px 52px 48px 64px 1fr;gap:6px;align-items:center;margin-top:6px}
+.crow .bk{font-family:var(--cond);font-size:12px;color:var(--mut)}
+.bsel2{padding:4px;text-align:center}
+.src-badge{font-family:var(--cond);font-size:11px;padding:5px 8px;border-radius:7px;margin-bottom:7px}
+.src-badge.anch{background:rgba(35,230,164,.08);border:1px solid var(--green);color:var(--green)}
+.src-badge.mdl{background:var(--bg2);border:1px solid var(--line2);color:var(--mut2)}
+.tier{font-style:normal;font-family:var(--cond);font-size:10px;color:var(--mut2);border:1px solid var(--line2);border-radius:5px;padding:0 4px;margin-left:4px}
+.tier.ok{color:var(--green);border-color:var(--green)}
+.tier.warn{color:var(--gold);border-color:var(--gold)}
+.bev.mid{color:var(--gold)}
+.bev.mut2{color:var(--mut2)}
+.ohm{font-family:var(--cond);font-size:10px;color:var(--gold);margin-left:5px}
+.stt.pact{background:var(--gold);color:#120c00}
+.bankrow{font-family:var(--cond);font-size:12px;color:var(--mut);margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}
+.bankrow input{width:70px}
 .stageacts{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:-4px 0 12px}
 .stageacts .hint{font-family:var(--cond);color:var(--mut2);font-size:11px}
 .done-badge{font-family:var(--cond);font-size:12px;color:var(--green);margin-left:auto}
@@ -319,6 +334,12 @@ td.pos,.pos{color:var(--green)} td.neg,.neg{color:var(--red)}
     <div id="probEmpty" class="note">入完賽果後會<b>自動後台更新</b>條件化機率（5,000 次，Worker 跑唔阻 UI）。撳 <b>▶ 跑 Monte Carlo</b> 可跑高精度版（10,000–20,000 次）。</div>
     <div id="probContent" class="hide">
       <div id="dvLine" class="note" style="margin:6px 0 8px"></div>
+      <details class="note" style="margin:4px 0 8px"><summary style="cursor:pointer">📋 模型驗證紀錄（2026-06-08 全面校準）</summary>
+        Walk-forward 回測：19,646 場國際賽（2006–2026），out-of-sample 測試期 2018–2026 共 8,081 場，先驗只用 2006–2017 擬合（零洩漏）。
+        結果：W/D/L RPS 0.173（基準 0.222，−22%）；斜率 F=0.34 位處最優平原（0.34–0.38）；攻防在線學習顯著（t=−4.3，OU-Brier −3.2%）；
+        20年節奏先驗喺冷啟動（每隊頭5場，即世界盃情境）顯著改善 RPS（t=−2.8）；機率校準桶 45–100% 區間預測 vs 命中誤差 &lt;1.2pp。
+        base λ=1.35 對應世盃總入球 ~2.7（2018 實際 2.64、2022 實際 2.69）。資料：martj42/international_results。
+      </details>
       <div id="champTrend" style="margin:8px 0 12px"></div>
       <div class="sec-h" id="probTitle">各階段晉級機率</div>
       <div class="shrinkrow">同市場幾何池化 (log-linear)：
@@ -374,6 +395,8 @@ const GROUPS = {
 const GL = "ABCDEFGHIJKL".split("");
 // 市場 de-vig 快照（FanDuel 2026-06-02, overround≈1.45）
 const MARKET = {西班牙:12.0,法國:11.5,英格蘭:9.2,巴西:7.3,阿根廷:6.9,葡萄牙:6.3,德國:4.6,荷蘭:3.0,挪威:1.9};
+/* 過往20年國際賽先驗（martj42/international_results，2006–2026，Poisson MLE＋4年半衰期；x=節奏偏斜 log-λ，+開放/−低事件；sa/sd=原始攻/防 MLE 顯示用） */
+const HPRIOR={"墨西哥":{"x":0.056,"m":354,"w":55,"gf":1.64,"ga":0.95,"sa":1.16,"sd":-0.97},"南非":{"x":-0.016,"m":276,"w":43,"gf":1.26,"ga":0.79,"sa":0.7,"sd":-0.76},"南韓":{"x":0.071,"m":287,"w":52,"gf":1.6,"ga":0.93,"sa":1.07,"sd":-0.83},"捷克":{"x":0.107,"m":222,"w":47,"gf":1.61,"ga":1.1,"sa":1.16,"sd":-0.8},"加拿大":{"x":0.033,"m":199,"w":44,"gf":1.59,"ga":1.03,"sa":0.98,"sd":-0.87},"波斯尼亞":{"x":0.06,"m":195,"w":38,"gf":1.48,"ga":1.39,"sa":0.85,"sd":-0.65},"卡塔爾":{"x":0.126,"m":316,"w":43,"gf":1.47,"ga":1.16,"sa":0.77,"sd":-0.35},"瑞士":{"x":0.107,"m":228,"w":48,"gf":1.68,"ga":1.03,"sa":1.37,"sd":-1.01},"巴西":{"x":0.094,"m":270,"w":67,"gf":2.08,"ga":0.68,"sa":1.71,"sd":-1.4},"摩洛哥":{"x":-0.067,"m":232,"w":56,"gf":1.66,"ga":0.66,"sa":1.14,"sd":-1.36},"海地":{"x":0.138,"m":190,"w":41,"gf":1.62,"ga":1.25,"sa":0.69,"sd":-0.23},"蘇格蘭":{"x":0.082,"m":187,"w":45,"gf":1.37,"ga":1.25,"sa":1.09,"sd":-0.81},"美國":{"x":0.097,"m":322,"w":54,"gf":1.78,"ga":1.07,"sa":1.13,"sd":-0.8},"巴拉圭":{"x":-0.006,"m":227,"w":30,"gf":1.05,"ga":1.24,"sa":0.96,"sd":-0.99},"澳洲":{"x":0.041,"m":233,"w":52,"gf":1.72,"ga":0.94,"sa":1.07,"sd":-0.94},"土耳其":{"x":0.15,"m":234,"w":49,"gf":1.62,"ga":1.15,"sa":1.29,"sd":-0.79},"德國":{"x":0.15,"m":269,"w":62,"gf":2.36,"ga":1.03,"sa":1.65,"sd":-1.03},"庫拉索":{"x":0.086,"m":136,"w":33,"gf":1.6,"ga":1.42,"sa":0.38,"sd":-0.09},"象牙海岸":{"x":0.026,"m":248,"w":54,"gf":1.73,"ga":0.88,"sa":1.04,"sd":-0.95},"厄瓜多爾":{"x":-0.023,"m":229,"w":37,"gf":1.33,"ga":1.15,"sa":1.14,"sd":-1.22},"荷蘭":{"x":0.138,"m":250,"w":60,"gf":2.11,"ga":0.91,"sa":1.57,"sd":-1.12},"日本":{"x":0.076,"m":294,"w":59,"gf":2.04,"ga":0.89,"sa":1.29,"sd":-1.04},"瑞典":{"x":0.135,"m":256,"w":49,"gf":1.54,"ga":1.08,"sa":1.27,"sd":-0.82},"突尼西亞":{"x":-0.012,"m":258,"w":47,"gf":1.45,"ga":0.88,"sa":0.88,"sd":-0.92},"比利時":{"x":0.13,"m":228,"w":58,"gf":2.08,"ga":1.01,"sa":1.56,"sd":-1.13},"埃及":{"x":-0.015,"m":257,"w":58,"gf":1.68,"ga":0.81,"sa":0.93,"sd":-0.98},"伊朗":{"x":0.037,"m":257,"w":60,"gf":1.85,"ga":0.71,"sa":1.1,"sd":-0.98},"紐西蘭":{"x":-0.038,"m":140,"w":39,"gf":1.43,"ga":1.28,"sa":0.42,"sd":-0.55},"西班牙":{"x":0.102,"m":270,"w":71,"gf":2.28,"ga":0.73,"sa":1.73,"sd":-1.38},"佛得角":{"x":0.02,"m":151,"w":43,"gf":1.21,"ga":1.03,"sa":0.65,"sd":-0.58},"沙特":{"x":0.01,"m":308,"w":44,"gf":1.41,"ga":1.02,"sa":0.67,"sd":-0.64},"烏拉圭":{"x":-0.003,"m":242,"w":47,"gf":1.57,"ga":0.99,"sa":1.26,"sd":-1.27},"法國":{"x":0.087,"m":268,"w":61,"gf":1.84,"ga":0.81,"sa":1.57,"sd":-1.28},"塞內加爾":{"x":0.029,"m":225,"w":56,"gf":1.6,"ga":0.8,"sa":1.15,"sd":-1.05},"伊拉克":{"x":-0.018,"m":295,"w":41,"gf":1.19,"ga":0.99,"sa":0.61,"sd":-0.67},"挪威":{"x":0.119,"m":203,"w":46,"gf":1.58,"ga":1.12,"sa":1.34,"sd":-0.94},"阿根廷":{"x":0.005,"m":265,"w":63,"gf":1.93,"ga":0.79,"sa":1.58,"sd":-1.56},"阿爾及利亞":{"x":0.113,"m":228,"w":58,"gf":1.83,"ga":0.91,"sa":1.24,"sd":-0.87},"奧地利":{"x":0.076,"m":206,"w":45,"gf":1.56,"ga":1.2,"sa":1.24,"sd":-0.99},"約旦":{"x":0.095,"m":291,"w":40,"gf":1.38,"ga":1.05,"sa":0.78,"sd":-0.47},"葡萄牙":{"x":0.096,"m":257,"w":60,"gf":2.04,"ga":0.82,"sa":1.59,"sd":-1.27},"剛果DR":{"x":-0.026,"m":198,"w":38,"gf":1.31,"ga":1.05,"sa":0.73,"sd":-0.82},"烏茲別克":{"x":-0.001,"m":231,"w":47,"gf":1.52,"ga":0.97,"sa":0.79,"sd":-0.8},"哥倫比亞":{"x":0.062,"m":235,"w":49,"gf":1.43,"ga":0.87,"sa":1.48,"sd":-1.28},"英格蘭":{"x":0.017,"m":247,"w":62,"gf":2.05,"ga":0.72,"sa":1.5,"sd":-1.44},"克羅地亞":{"x":0.082,"m":241,"w":55,"gf":1.76,"ga":1.0,"sa":1.35,"sd":-1.07},"加納":{"x":0.049,"m":245,"w":45,"gf":1.42,"ga":1.0,"sa":0.82,"sd":-0.66},"巴拿馬":{"x":0.092,"m":278,"w":41,"gf":1.35,"ga":1.22,"sa":0.81,"sd":-0.5}};
 
 /* ============================================================
    2. KNOCKOUT STRUCTURE — Match 73–104
@@ -428,7 +451,7 @@ function eloStep(ra,rb,ga,gb,K){
 // form 調整後 rating（base+host，再按已知賽果學習）。回傳完整 team 物件 map
 function formRatings(){
   const base=buildTeams(), R={};
-  for(const n in base) R[n]={n:base[n].n,f:base[n].f,g:base[n].g, r:base[n].r+(HOST[n]||0), att:0, def:0};
+  for(const n in base){ const x=(HPRIOR[n]&&HPRIOR[n].x)||0; R[n]={n:base[n].n,f:base[n].f,g:base[n].g, r:base[n].r+(HOST[n]||0), att:x, def:x}; }
   if(!LEARN) return R;
   const co=v=>Math.max(-0.30,Math.min(0.30,v)), LR=0.035;
   const upd=(a,b,ga,gb)=>{
@@ -570,7 +593,7 @@ function simKO(ctx){
 // 跑一次：per-sim 抽 rating + 主場加成
 function simTournament(teams, gp, rec){
   const j={};
-  for(const n in teams){const t=teams[n]; const s=SIGMA/Math.sqrt(1+((gp&&gp[n])||0)); j[n]={n:t.n,f:t.f,g:t.g, r:t.r + s*gauss()};}
+  for(const n in teams){const t=teams[n]; const s=SIGMA/Math.sqrt(1+((gp&&gp[n])||0)); j[n]={n:t.n,f:t.f,g:t.g, r:t.r + s*gauss(), att:t.att||0, def:t.def||0};}
   const {standings, thirds, gmatches}=simGroups(j, rec);
   const {ranked, qualGroups, advSet}=rankThirds(thirds);
   const ctx={standings, thirdAssign:assignThirds(qualGroups)};
@@ -595,7 +618,7 @@ function stageReached(ctx, n){
 let MC_USED_WORKER=false;
 function buildWorkerSrc(){
   const fns=[eloStep,lamPair,formRatings,gamesPlayedMap,gauss,eloP,sampleScore,playMatch,buildTeams,cmpTeam,simGroups,rankThirds,assignThirds,resolveSide,simKO,simTournament,stageReached];
-  const consts=`var GROUPS=${JSON.stringify(GROUPS)},GL=${JSON.stringify(GL)},T3SLOTS=${JSON.stringify(T3SLOTS)},KORD=${JSON.stringify(KORD)},KO=${JSON.stringify(KO)},HOST=${JSON.stringify(HOST)},MD=${JSON.stringify(MD)},RHO=${RHO},MAXG=${MAXG},K_LEARN=${K_LEARN};var VOL=0.3,SIGMA=58,LEARN=true,KNOWN={g:{},k:{}};`;
+  const consts=`var HPRIOR=${JSON.stringify(HPRIOR)},GROUPS=${JSON.stringify(GROUPS)},GL=${JSON.stringify(GL)},T3SLOTS=${JSON.stringify(T3SLOTS)},KORD=${JSON.stringify(KORD)},KO=${JSON.stringify(KO)},HOST=${JSON.stringify(HOST)},MD=${JSON.stringify(MD)},RHO=${RHO},MAXG=${MAXG},K_LEARN=${K_LEARN};var VOL=0.3,SIGMA=58,LEARN=true,KNOWN={g:{},k:{}};`;
   const handler="onmessage=function(e){var d=e.data;VOL=d.VOL;SIGMA=d.SIGMA;LEARN=d.LEARN;KNOWN=d.KNOWN;var N=d.N;var teams=formRatings(),gp=gamesPlayedMap(),names=Object.keys(teams),tally={};names.forEach(function(n){tally[n]={r32:0,r16:0,qf:0,sf:0,fin:0,champ:0,g:teams[n].g};});for(var k=0;k<N;k++){var ctx=simTournament(teams,gp).ctx;for(var x=0;x<names.length;x++){var n=names[x],f=stageReached(ctx,n),t=tally[n];if(f.r32)t.r32++;if(f.r16)t.r16++;if(f.qf)t.qf++;if(f.sf)t.sf++;if(f.fin)t.fin++;if(f.champ)t.champ++;}if((k&511)===0)postMessage({p:k/N});}var rows=names.map(function(n){var t=tally[n];return{n:n,f:teams[n].f,g:t.g,r32:t.r32/N,r16:t.r16/N,qf:t.qf/N,sf:t.sf/N,fin:t.fin/N,champ:t.champ/N};}).sort(function(a,b){return b.champ-a.champ||b.fin-a.fin;});postMessage({done:true,rows:rows});};";
   return consts+"\n"+fns.map(f=>f.toString()).join("\n")+"\n"+handler;
 }
@@ -928,6 +951,109 @@ function buildJoint(la,lb){
   J.forEach(c=>c[2]/=tot); return J;
 }
 const _S=(J,f)=>{let s=0;for(const[x,y,p]of J)if(f(x,y))s+=p;return s;};
+/* ---- 市場錨定 ---- */
+function probs3(la,lb){
+  const N=10, pa=[Math.exp(-la)], pb=[Math.exp(-lb)];
+  for(let i=1;i<=N;i++){pa.push(pa[i-1]*la/i);pb.push(pb[i-1]*lb/i);}
+  let pW=0,pD=0,pL=0,tot=0;
+  for(let x=0;x<=N;x++)for(let y=0;y<=N;y++){
+    let t=1; if(x===0&&y===0)t=1-la*lb*RHO;else if(x===0&&y===1)t=1+la*RHO;
+    else if(x===1&&y===0)t=1+lb*RHO;else if(x===1&&y===1)t=1-RHO;
+    const p=t*pa[x]*pb[y]; tot+=p;
+    if(x>y)pW+=p;else if(x<y)pL+=p;else pD+=p;
+  }
+  return {pW:pW/tot,pD:pD/tot,pL:pL/tot};
+}
+function devig(o1,oX,o2,method){ /* method 'pow'(default)|'prop' */
+  if(!(o1>1&&oX>1&&o2>1)) return null;
+  const q=[1/o1,1/oX,1/o2], ovr=q[0]+q[1]+q[2];
+  if(ovr<=1.001) return null;
+  if(method==='prop') return {p:q.map(x=>x/ovr), ovr};
+  let lo=0.5,hi=4;
+  for(let i=0;i<60;i++){const k=(lo+hi)/2;
+    (Math.pow(q[0],k)+Math.pow(q[1],k)+Math.pow(q[2],k)>1)?lo=k:hi=k;}
+  const k=(lo+hi)/2;
+  return {p:[Math.pow(q[0],k),Math.pow(q[1],k),Math.pow(q[2],k)], ovr, k};
+}
+function solveLambda(TW,TD){
+  const TL=1-TW-TD, Tr=TW/(TW+TL);
+  const inner=(m)=>{ let lo=-3.5,hi=3.5;
+    for(let i=0;i<36;i++){const sm=(lo+hi)/2,r=Math.exp(sm);
+      const P=probs3(m*r/(1+r), m/(1+r));
+      (P.pW/(P.pW+P.pL)<Tr)?lo=sm:hi=sm;}
+    const r=Math.exp((lo+hi)/2); return [m*r/(1+r), m/(1+r)]; };
+  let lo=0.5,hi=7.5;
+  for(let i=0;i<36;i++){const m=(lo+hi)/2; const [la,lb]=inner(m);
+    (probs3(la,lb).pD>TD)?lo=m:hi=m;}
+  const [la,lb]=inner((lo+hi)/2);
+  const P=probs3(la,lb), res=Math.abs(P.pW-TW)+Math.abs(P.pD-TD);
+  return {la,lb,res};
+}
+function anchorFor(id){
+  const oh=parseFloat(ODDS[id+'_h']), od=parseFloat(ODDS[id+'_d']), oa=parseFloat(ODDS[id+'_a']);
+  const dv=devig(oh,od,oa); if(!dv) return null;
+  const sl=solveLambda(dv.p[0],dv.p[1]); if(sl.res>0.01) return null;
+  const bd=marketBoard(sl.la,sl.lb);
+  const dv2=devig(oh,od,oa,'prop'); const sl2=solveLambda(dv2.p[0],dv2.p[1]);
+  const Jalt=sl2.res<=0.01?marketBoard(sl2.la,sl2.lb).J:bd.J;
+  return {la:sl.la,lb:sl.lb,bd,dv,Jalt};
+}
+/* EV 區間：模型模式用 σ 擾動 supremacy；錨定模式用兩種除水法差 */
+function bandJoints(ctx){
+  if(ctx.anch) return [ctx.anch.bd.J, ctx.anch.Jalt];
+  const gp=gamesPlayedMap();
+  const sA=SIGMA/Math.sqrt(1+(gp[ctx.A.n]||0)), sB=SIGMA/Math.sqrt(1+(gp[ctx.B.n]||0));
+  const dr=Math.sqrt(sA*sA+sB*sB), f=0.34*(0.30/VOL), k=Math.exp(f*dr/150);
+  return [marketBoard(Math.min(ctx.an.la*k,5.5), Math.max(ctx.an.lb/k,0.15)).J,
+          marketBoard(Math.max(ctx.an.la/k,0.15), Math.min(ctx.an.lb*k,5.5)).J];
+}
+function evBandTxt(pMain,pLo,pHi,book){
+  const b=parseFloat(book); if(!isFinite(b)||b<=1) return null;
+  const evs=[pMain*b-1,pLo*b-1,pHi*b-1].sort((x,y)=>x-y);
+  const ev=pMain*b-1, lo=evs[0], hi=evs[2];
+  const k=Math.max(0,((b-1)*pMain-(1-pMain))/(b-1))*0.25;
+  return {ev,lo,hi,k,txt:(ev>=0?'+':'')+(ev*100).toFixed(1)+'%（'+(lo>=0?'+':'')+(lo*100).toFixed(1)+'〜'+(hi>=0?'+':'')+(hi*100).toFixed(1)+'）·K'+(k*100).toFixed(1)+'%',
+    cls: lo>0?'bev pos':(ev>0?'bev mid':'bev neg')};
+}
+/* 線路歷史 */
+function loadOH(){try{const v=JSON.parse(localStorage.getItem('wc26ohist'));return v&&typeof v==='object'?v:{};}catch(e){return {};}}
+let OHIST=loadOH();
+function saveOH(){try{localStorage.setItem('wc26ohist',JSON.stringify(OHIST));}catch(e){}}
+function ohSnap(key,val){ const v=parseFloat(val); if(!isFinite(v))return;
+  const h=OHIST[key]=OHIST[key]||[]; if(h.length&&Math.abs(h[h.length-1].v-v)<1e-9)return;
+  h.push({t:Date.now(),v}); if(h.length>20)h.shift(); saveOH(); }
+function ohArrow(key,modelP){ const h=OHIST[key]; if(!h||h.length<2)return '';
+  const d=h[h.length-1].v-h[0].v; if(Math.abs(d)<1e-9)return '';
+  const dirTxt=d<0?'↘縮':'↗漂';
+  const edge=modelP!=null&&isFinite(modelP)?(modelP*h[h.length-1].v-1):null;
+  const align=(edge!=null&&edge>0&&d<0)?' 市場趨向模型':'';
+  return `<span class="ohm">${dirTxt}${align}</span>`; }
+/* 和局誘因 */
+function loadBoost(){try{const v=JSON.parse(localStorage.getItem('wc26boost'));return v&&typeof v==='object'?v:{};}catch(e){return {};}}
+let BOOST=loadBoost();
+function toggleBoost(id){ if(BOOST[id])delete BOOST[id]; else BOOST[id]=true;
+  try{localStorage.setItem('wc26boost',JSON.stringify(BOOST));}catch(e){} renderDaily(curPage); }
+function drawPact(ref,st){
+  if(ref.kind!=='g'||ref.md!==2) return null;
+  const pi=pairIndexOf(ref.g,ref.i,ref.j);
+  const an=GROUPS[ref.g][ref.i][0], bn=GROUPS[ref.g][ref.j][0];
+  const qD=groupPosProbs(ref.g,st.eff,{pi,o:1});
+  const qa=qD[an][0]+qD[an][1], qb=qD[bn][0]+qD[bn][1];
+  if(qa<0.80||qb<0.80) return null;
+  const qLA=groupPosProbs(ref.g,st.eff,{pi,o:2}); const la=qLA[an][0]+qLA[an][1];
+  const qLB=groupPosProbs(ref.g,st.eff,{pi,o:0}); const lb=qLB[bn][0]+qLB[bn][1];
+  if((qa-la)>=0.20 && (qb-lb)>=0.20) return {qa,qb,riskA:la,riskB:lb};   // 雙方都有實質誘因
+  return null;
+}
+function lineBet(J,kind,side,L){ /* kind 'ou'(side 1=大,-1=細) | 'ah'(side 1=主,-1=客；L=該方讓球線) */
+  const isQ=Math.abs((L*2)%1)>1e-9, legs=isQ?[L-0.25,L+0.25]:[L];
+  let win=0,push=0,lose=0;
+  for(const leg of legs){let w=0,ps=0,ls=0;
+    for(const[x,y,p]of J){ const m = kind==='ou' ? (x+y-leg)*side : ((side===1?(x-y):(y-x))+leg);
+      if(m>1e-9)w+=p; else if(m<-1e-9)ls+=p; else ps+=p; }
+    win+=w/legs.length;push+=ps/legs.length;lose+=ls/legs.length;}
+  return {win,push,lose,fair:win>0?(1-push)/win:99};
+}
 function ahHome(J,L){
   const isQ=Math.abs((L*2)%1)>1e-9, legs=isQ?[L-0.25,L+0.25]:[L];
   let win=0,push=0,lose=0;
@@ -946,6 +1072,7 @@ function marketBoard(la,lb){
     btts:_S(J,(x,y)=>x>=1&&y>=1),
     ah:{m05:ahHome(J,-0.5),m1:ahHome(J,-1),m15:ahHome(J,-1.5),p05:ahHome(J,0.5)},
     cs:J.slice().sort((a,b)=>b[2]-a[2]).slice(0,6),
+    J,
     odds,
   };
 }
@@ -1049,7 +1176,23 @@ function todayPageIdx(){ const mac=new Date(Date.now()+8*3600000); const key=(ma
 function defaultIdx(){ const t=todayPageIdx(); return t>=0?t:earliestOpenPage(); }
 function refTeams(ref,st){ if(ref.kind==='g') return [GROUPS[ref.g][ref.i][0],GROUPS[ref.g][ref.j][0]]; const t=st.koTeams[ref.m]; return t?[t[0].n,t[1].n]:[]; }
 
-let ANALCTX={};
+let ANALCTX={}, BOARDCTX={};
+const NEXTM={};
+(function(){ for(const q of KORD){ for(const sd of ['a','b']){ const o=KO[q][sd];
+  if(o&&o.w!==undefined) NEXTM[o.w]={q, other:KO[q][sd==='a'?'b':'a']}; } }})();
+function advChance(t0,t1){ const an=analyzeT(t0,t1); return an.pW+an.pD*(0.5+(eloP(t0.r,t1.r)-0.5)*0.2); }
+function nextOppHTML(m, st){
+  const nx=NEXTM[m]; if(!nx) return '';
+  const sde=nx.other; let txt='待定';
+  const res=(mm)=>{ if(st.winners&&st.winners[mm]) return st.winners[mm].n;
+    const t=st.koTeams&&st.koTeams[mm];
+    if(t){ const p=advChance(t[0],t[1]); return 'M'+mm+' 勝方（'+t[0].n+' '+(p*100).toFixed(0)+'% / '+t[1].n+' '+((1-p)*100).toFixed(0)+'%）'; }
+    return 'M'+mm+' 勝方（對陣待定）'; };
+  if(sde.w!==undefined) txt=res(sde.w);
+  else if(sde.l!==undefined) txt='M'+sde.l+' 負方';
+  else if(sde.p||sde.slot!==undefined) txt='小組賽出線隊伍';
+  return `<div class="gsec-h" style="margin:8px 0 2px">晉級路徑</div><div class="mut" style="font-size:12px">本場勝方下一場（M${nx.q} · ${mdShort(nx.q)}）對：${txt}</div>`;
+}
 function pairIndexOf(g,i,j){ const pairs=[[0,1],[2,3],[0,2],[1,3],[0,3],[1,2]]; return pairs.findIndex(p=>p[0]===i&&p[1]===j); }
 function formStr(name){
   const seq=[];
@@ -1077,7 +1220,9 @@ function analysisHTML(ref,id,A,B,st){
     const b=baseT[T.n].r+(HOST[T.n]||0), dR=T.r-b;
     const fseq=formStr(T.n), fs=fseq.length?fseq.map(x=>`<span class="fchip f${x.res}">${x.res} ${x.s}</span>`).join(''):'<span class="mut">未有賽事紀錄</span>';
     const rd=restDays(T.n,id,st);
-    return `<div class="an-team"><b>${T.n}</b>　${fs}<div class="mut" style="font-size:12px;margin-top:2px">實力 ${Math.round(T.r)}（賽事中 ${dR>=0.5?'+'+dR.toFixed(0):dR<=-0.5?dR.toFixed(0):'±0'}）· 攻 ${T.att>=0?'+':''}${(T.att*100).toFixed(0)}% · 防${T.def>0.005?'漏':T.def<-0.005?'穩':''} ${Math.abs(T.def*100).toFixed(0)}% · 休息 ${rd===null?'首場':rd+' 日'}</div></div>`;
+    const hp=HPRIOR[T.n], x=hp?hp.x:0, dA=T.att-x, dD=T.def-x;
+    const hist=hp?`20年 ${hp.m} 場 勝率 ${hp.w}% 場均 ${hp.gf} 入 ${hp.ga} 失 · 節奏先驗 ${x>=0?'+':''}${(x*100).toFixed(0)}%${Math.abs(dA)>=0.005||Math.abs(dD)>=0.005?` · 賽事學習 攻${dA>=0?'+':''}${(dA*100).toFixed(0)}%/防${dD>=0?'+':''}${(dD*100).toFixed(0)}%`:''}`:'無歷史資料';
+    return `<div class="an-team"><b>${T.n}</b>　${fs}<div class="mut" style="font-size:12px;margin-top:2px">實力 ${Math.round(T.r)}（賽事中 ${dR>=0.5?'+'+dR.toFixed(0):dR<=-0.5?dR.toFixed(0):'±0'}）· 休息 ${rd===null?'首場':rd+' 日'}<br>${hist}</div></div>`;
   };
   let qual='';
   if(ref.kind==='g'){
@@ -1088,29 +1233,52 @@ function analysisHTML(ref,id,A,B,st){
     qual=`<div class="gsec-h" style="margin:8px 0 4px">出線影響（首二名解析機率，條件化本場結果）</div>
       <div style="overflow-x:auto"><table class="ptbl"><tr><th class="l">本場結果</th><th>${A.n} 出線</th><th>${B.n} 出線</th></tr>${cells}</table></div>`;
   }
-  return `<div class="an-panel">${rowT(A)}${rowT(B)}${qual}</div>`;
+  const nxt = ref.kind==='k' ? nextOppHTML(ref.m, st) : '';
+  return `<div class="an-panel">${rowT(A)}${rowT(B)}${qual}${nxt}</div>`;
 }
 function toggleAnal(id){ const el=document.getElementById('an_'+id); if(!el) return;
   if(el.classList.contains('hide') && !el.innerHTML){ const c=ANALCTX[id]; if(c) el.innerHTML=analysisHTML(c.ref,id,c.A,c.B,c.st); }
   el.classList.toggle('hide'); }
+function loadBank(){ try{const v=parseFloat(localStorage.getItem('wc26bank')); return isFinite(v)&&v>0?v:0;}catch(e){return 0;} }
+let BANK=loadBank();
+function setBank(v){ BANK=parseFloat(v)||0; try{localStorage.setItem('wc26bank',String(BANK));}catch(e){} renderDaily(curPage); }
 function dailyEVTop(pg,st){
   const rows=[];
   for(const it of pg.items){ const ref=it.ref, id=ref.id;
     let A,B,known;
     if(ref.kind==='g'){ A=st.eff[GROUPS[ref.g][ref.i][0]]; B=st.eff[GROUPS[ref.g][ref.j][0]]; known=KNOWN.g[id]; }
     else { const t=st.koTeams[ref.m]; if(!t) continue; A=t[0]; B=t[1]; known=KNOWN.k[ref.m]; }
-    if(known&&known.locked) continue;   // 已確定完場，EV 無意義
+    if(known&&known.locked) continue;
     const gs=VENUEADJ?venueFactor(id):1;
     const an=analyzeT(A,B,gs), bd=marketBoard(an.la,an.lb);
-    for(const m of marketDefs(A,B,bd)){
+    const anch=anchorFor(id);
+    const ctx={A,B,an,anch};
+    const [Jlo,Jhi]=bandJoints(ctx);
+    const bdE=anch?anch.bd:bd;
+    for(const m of marketDefs(A,B,bdE)){
       const saved=ODDS[id+'_'+m.key]; if(!saved) continue;
-      const r=evKelly(m.p, parseFloat(saved)); if(!r) continue;
-      rows.push({match:A.n+' v '+B.n, lbl:m.lbl, ev:r.ev, qk:r.qk, book:parseFloat(saved), fair:fairOdds(m.p)});
+      const is1x2=(m.key==='h'||m.key==='d'||m.key==='a');
+      if(anch&&is1x2) continue;                       // 錨定基準，不評
+      const md2=marketDefs(A,B,marketBoardFromJ(Jlo)).find(x=>x.key===m.key);
+      const md3=marketDefs(A,B,marketBoardFromJ(Jhi)).find(x=>x.key===m.key);
+      const r=evBandTxt(m.p, md2?md2.p:m.p, md3?md3.p:m.p, saved); if(!r) continue;
+      rows.push({match:A.n+' v '+B.n, lbl:m.lbl, ev:r.ev, lo:r.lo, k:r.k,
+        book:parseFloat(saved), fair:fairOdds(m.p), tier:anch?1:(is1x2?3:2)});
     } }
-  if(!rows.length) return '';
-  rows.sort((a,b)=>b.ev-a.ev);
-  const top=rows.slice(0,3).map((r,i)=>`<div class="evt-row"><span class="evt-rank">${i+1}</span><span class="evt-m">${r.match}<small> · ${r.lbl}</small></span><span class="evt-o">莊 ${r.book.toFixed(2)} / 公平 ${r.fair.toFixed(2)}</span><span class="evt-ev ${r.ev>0?'pos':'neg'}">${r.ev>=0?'+':''}${(r.ev*100).toFixed(1)}%<small> K${(r.qk*100).toFixed(1)}%</small></span></div>`).join('');
-  return `<div class="evtop"><div class="cup-hd">💰 今日價值盤（已貼賠率，按 EV 排）</div>${top}</div>`;
+  if(!rows.length&&!BANK) return '';
+  rows.sort((a,b)=> (a.tier-b.tier) || (b.lo-a.lo) || (b.ev-a.ev));
+  const tierTag=t=>t===1?'<i class="tier ok">✓錨定</i>':t===2?'<i class="tier">模型·衍生</i>':'<i class="tier warn">⚠模型1X2</i>';
+  const top=rows.slice(0,4).map((r,i)=>`<div class="evt-row"><span class="evt-rank">${i+1}</span><span class="evt-m">${r.match}<small> · ${r.lbl}</small> ${tierTag(r.tier)}</span><span class="evt-o">莊 ${r.book.toFixed(2)} / 公平 ${r.fair.toFixed(2)}</span><span class="evt-ev ${r.lo>0?'pos':(r.ev>0?'mid':'neg')}">${r.ev>=0?'+':''}${(r.ev*100).toFixed(1)}%<small>（下界 ${r.lo>=0?'+':''}${(r.lo*100).toFixed(1)}%）K${(r.k*100).toFixed(1)}%</small></span></div>`).join('');
+  let bankHTML=`<div class="bankrow">本金 <input class="bo" id="bankIn" value="${BANK||''}" placeholder="如 1000" onchange="setBank(this.value)">`;
+  if(BANK>0){
+    const act=rows.filter(r=>r.tier<3&&r.lo>0);
+    const stake=act.reduce((sum,r)=>sum+r.k*BANK,0);
+    const pct=stake/BANK*100;
+    const matches=new Set(act.map(r=>r.match));
+    bankHTML+=`　今日可操作訊號 ${act.length} 個 · 合計建議 ${stake.toFixed(0)}（佔 <b style="color:${pct>5?'var(--red)':'var(--green)'}">${pct.toFixed(1)}%</b>）${act.length>matches.size?' · ⚠ 含同場多注（相關，勿當獨立）':''}${pct>5?' · ⚠ 超 5% 上限，建議按比例縮':''}`;
+  }
+  bankHTML+='</div>';
+  return `<div class="evtop"><div class="cup-hd">💰 今日訊號（下界>0 先綠；錨定>模型；1X2 模型訊號僅參考）</div>${top}${bankHTML}</div>`;
 }
 function renderDaily(idx){
   applyStyle();
@@ -1119,7 +1287,7 @@ function renderDaily(idx){
   const st=buildKnownState();
   if(idx==null) idx=(curPage!=null&&curPage<PAGES.length)?curPage:defaultIdx();
   idx=Math.max(0,Math.min(PAGES.length-1,idx));
-  curPage=idx; ANALCTX={};
+  curPage=idx; ANALCTX={}; BOARDCTX={};
   const pg=PAGES[idx], wd='日一二三四五六'[pg.wd];
   let curRound=-1; for(let i=0;i<ROUNDJUMP.length;i++) if(idx>=ROUNDJUMP[i].idx) curRound=i;
   const rbar=`<div class="roundbar">${ROUNDJUMP.map((r,i)=>`<button class="rbtn ${i===curRound?'on':''}" onclick="renderDaily(${r.idx})">${r.label}</button>`).join("")}</div>`;
@@ -1160,20 +1328,27 @@ function matchCard(ref, st){
   const stt=matchStatus(id), sttHTML = stt==='live'?'<span class="stt live">● 進行中</span>':(stt==='done'&&!known?'<span class="stt done">已完場 · 待入</span>':'');
   const star=n=>`<span class="star ${FOLLOW.has(n)?'on':''}" onclick="event.stopPropagation();toggleFollow('${n}')">${FOLLOW.has(n)?'★':'☆'}</span>`;
   const scoreStr=known?`${known.ga}-${known.gb}${ref.kind==='k'?' · '+known.w+(known.pen?'(P)':''):''}`:'';
+  const pact=drawPact(ref,st);
+  let bdShow=bd, boostNote='';
+  if(pact&&BOOST[id]&&!ODDS[id+'_h']){ const mix=(p,t)=>0.75*p+0.25*t;
+    bdShow={...bd, x12:{home:mix(bd.x12.home,0),draw:mix(bd.x12.draw,1),away:mix(bd.x12.away,0)}};
+    boostNote=' <i class="tier">+和局誘因25%</i>'; }
   ANALCTX[id]={ref,A,B,st};
+  BOARDCTX[id]={J:bd.J, A, B, bdM:bd, an, gs, anch:anchorFor(id)};
   return `<div class="mc${(fA||fB)?' foll':''}">
-    <div class="mctag">${tagTxt}${sttHTML}</div>
+    <div class="mctag">${tagTxt}${sttHTML}${pact?`<span class="stt pact">⚠ 雙和齊出線</span>`:''}</div>
     <div class="mteams" style="margin:6px 0 2px">
       <div class="tm"><div class="nmln">${star(A.n)}${fl(A)}${A.n}</div><div class="rt">實力 ${Math.round(A.r)}</div></div>
       <div class="vs">VS</div>
       <div class="tm"><div class="nmln">${B.n}${fl(B)}${star(B.n)}</div><div class="rt">實力 ${Math.round(B.r)}</div></div>
     </div>
     <div class="mtime">🕒 ${fmtFix(id)}${gs!==1?' · ⛰修正':''}</div>
-    <div class="wdl">
-      <span class="w" style="width:${pW}%">${pW>9?A.n+' '+Math.round(pW)+'%':''}</span>
-      <span class="d" style="width:${pD}%">${pD>9?'和 '+Math.round(pD)+'%':''}</span>
-      <span class="l" style="width:${pL}%">${pL>9?B.n+' '+Math.round(pL)+'%':''}</span>
-    </div>
+    ${(()=>{ const bb=pact&&BOOST[id]; const dW=bb?bdShow.x12.home*100:pW, dD=bb?bdShow.x12.draw*100:pD, dL=bb?bdShow.x12.away*100:pL;
+      return `<div class="wdl">
+      <span class="w" style="width:${dW}%">${dW>9?A.n+' '+Math.round(dW)+'%':''}</span>
+      <span class="d" style="width:${dD}%">${dD>9?'和 '+Math.round(dD)+'%':''}</span>
+      <span class="l" style="width:${dL}%">${dL>9?B.n+' '+Math.round(dL)+'%':''}</span>
+    </div>${bb?'<div class="mut" style="font-family:var(--cond);font-size:10.5px;text-align:center">已套用和局誘因 +25%（heuristic，僅影響 W/D/L 顯示）</div>':''}`; })()}
     <div class="xg">期望入球 <b>${an.la.toFixed(2)}</b> — <b>${an.lb.toFixed(2)}</b>　·　預測 <b>${an.top[0][0]}-${an.top[0][1]}</b></div>
     <div class="scos">${an.top.map(s=>`<span class="sco"><b>${s[0]}-${s[1]}</b> ${(s[2]*100).toFixed(0)}%</span>`).join("")}</div>
     ${locked?`
@@ -1191,6 +1366,7 @@ function matchCard(ref, st){
       ${simmed?`<button class="mini" onclick="clearMatch('${id}')">清</button>`:''}
       <button class="mini" onclick="toggleAnal('${id}')">分析▾</button>
       <button class="mini" onclick="toggleBoard('${id}')">盤口參考▾</button>
+      ${pact?`<button class="mini ${BOOST[id]?'sim':''}" onclick="toggleBoost('${id}')">和局誘因${BOOST[id]?'✓':''}</button>`:''}
       ${simmed?`<span class="done-badge sm">🔓 ${scoreStr}</span>`:''}
     </div>`}
     <div class="mc-board hide" id="an_${id}"></div>
@@ -1198,25 +1374,78 @@ function matchCard(ref, st){
   </div>`;
 }
 function boardHTML(id,A,B,bd){
-  const o=fairOdds;
-  const row=(lbl,p,key)=>{ const saved=ODDS[id+'_'+key]||''; const r=saved?evKelly(p,parseFloat(saved)):null;
-    const evTxt=r?((r.ev>=0?'+':'')+(r.ev*100).toFixed(1)+'% ·K'+(r.qk*100).toFixed(1)+'%'):'';
-    const evCls=r?(r.ev>0?'bev pos':'bev neg'):'bev';
-    return `<div class="brow"><span class="bk">${lbl}</span><span class="bf">${o(p).toFixed(2)}</span>
-    <input class="bo" id="bk_${id}_${key}" inputmode="decimal" placeholder="莊家賠率" value="${saved}" oninput="evCalc('${id}','${key}',${p})">
-    <span class="${evCls}" id="ev_${id}_${key}">${evTxt}</span></div>`; };
+  const o=fairOdds, ctx=BOARDCTX[id]||{A,B,an:{la:bd.J?undefined:0}};
+  const anch=ctx.anch||null;
+  const bdE=anch?anch.bd:bd;                              // 衍生盤定價來源
+  const [Jlo,Jhi]=bandJoints({...ctx,A,B,an:ctx.an||{la:0,lb:0}});
+  const bdLo=null;
+  const probOf=(J,key)=>{ const md=marketDefs(A,B,marketBoardFromJ(J)); const f=md.find(x=>x.key===key); return f?f.p:null; };
+  const srcBadge = anch
+    ? `<div class="src-badge anch">定價來源：市場錨定（水位 ${((anch.dv.ovr-1)*100).toFixed(1)}%）— 1X2 為基準不評 EV，衍生盤 EV = 市場自身一致性訊號</div>`
+    : `<div class="src-badge mdl">定價來源：純模型 — 貼齊 1X2 三個價即升級「市場錨定」；1X2 EV 僅供參考</div>`;
+  const row=(lbl,p,key)=>{ const saved=ODDS[id+'_'+key]||'';
+    const is1x2=(key==='h'||key==='d'||key==='a');
+    let evHTML='';
+    if(saved){
+      if(anch&&is1x2){ evHTML=`<span class="bev mut2">基準</span>`; }
+      else{
+        const pLo=probOf(Jlo,key), pHi=probOf(Jhi,key);
+        const r=evBandTxt(p, pLo==null?p:pLo, pHi==null?p:pHi, saved);
+        if(r) evHTML=`<span class="${r.cls}" id="ev_${id}_${key}">${r.txt}${(!anch&&is1x2)?' <i class="tier">⚠模型</i>':''}</span>`;
+      }
+    } else evHTML=`<span class="bev" id="ev_${id}_${key}"></span>`;
+    return `<div class="brow"><span class="bk">${lbl}${ohArrow(id+'_'+key,p)}</span><span class="bf">${o(p).toFixed(2)}</span>
+    <input class="bo" id="bk_${id}_${key}" inputmode="decimal" placeholder="莊家賠率" value="${saved}" onchange="boardCommit('${id}')">
+    ${evHTML}</div>`; };
   return `<div class="board">
-    ${marketDefs(A,B,bd).map(m=>row(m.lbl,m.p,m.key)).join('')}
-    <div class="bsub">讓球(主) -0.5 ${bd.ah.m05.fair.toFixed(2)} | -1 ${bd.ah.m1.fair.toFixed(2)} | -1.5 ${bd.ah.m15.fair.toFixed(2)} | +0.5 ${bd.ah.p05.fair.toFixed(2)}　·　波膽 ${bd.cs.slice(0,4).map(s=>s[0]+'-'+s[1]).join(' ')}</div>
+    ${srcBadge}
+    ${marketDefs(A,B,bdE).map(m=>row(m.lbl,m.p,m.key)).join('')}
+    ${(()=>{ const cv=k=>ODDS[id+'_'+k]||'';
+      const JE=bdE.J;
+      const cf=(kind)=>{ const P=kind==='ou'?'cou':'cah';
+        const sd=parseInt(cv(P+'s')||'1'), ln=parseFloat(cv(P+'l')), bk=cv(P+'b');
+        if(!isFinite(ln)) return null;
+        const q=lineBet(JE,kind,sd,ln), qLo=lineBet(Jlo,kind,sd,ln), qHi=lineBet(Jhi,kind,sd,ln);
+        const out={fair:q.fair.toFixed(2)};
+        const b=parseFloat(bk);
+        if(isFinite(b)&&b>1){ const e=q.win*(b-1)-q.lose, e1=qLo.win*(b-1)-qLo.lose, e2=qHi.win*(b-1)-qHi.lose;
+          const lo=Math.min(e,e1,e2), hi=Math.max(e,e1,e2);
+          out.ev=(e>=0?'+':'')+(e*100).toFixed(1)+'%（'+(lo>=0?'+':'')+(lo*100).toFixed(1)+'〜'+(hi>=0?'+':'')+(hi*100).toFixed(1)+'）·K'+(Math.max(e,0)/(b-1)/4*100).toFixed(1)+'%';
+          out.cls=lo>0?'bev pos':(e>0?'bev mid':'bev neg'); }
+        return out; };
+      const r1=cf('ou'), r2=cf('ah');
+      return `<div class="crow"><span class="bk">自訂大細</span>
+        <input class="bo" id="coul_${id}" placeholder="線 2.25" value="${cv('coul')}" onchange="boardCommit('${id}')">
+        <select class="bo bsel2" id="cous_${id}" onchange="boardCommit('${id}')"><option value="1"${cv('cous')!=='-1'?' selected':''}>大</option><option value="-1"${cv('cous')==='-1'?' selected':''}>細</option></select>
+        <span class="bf" id="couf_${id}">${r1?r1.fair:''}</span>
+        <input class="bo" id="coub_${id}" placeholder="莊" value="${cv('coub')}" onchange="boardCommit('${id}')">
+        <span class="${r1&&r1.cls?r1.cls:'bev'}" id="coue_${id}">${r1&&r1.ev?r1.ev:''}</span></div>
+      <div class="crow"><span class="bk">自訂讓球</span>
+        <input class="bo" id="cahl_${id}" placeholder="線 -0.75" value="${cv('cahl')}" onchange="boardCommit('${id}')">
+        <select class="bo bsel2" id="cahs_${id}" onchange="boardCommit('${id}')"><option value="1"${cv('cahs')!=='-1'?' selected':''}>主</option><option value="-1"${cv('cahs')==='-1'?' selected':''}>客</option></select>
+        <span class="bf" id="cahf_${id}">${r2?r2.fair:''}</span>
+        <input class="bo" id="cahb_${id}" placeholder="莊" value="${cv('cahb')}" onchange="boardCommit('${id}')">
+        <span class="${r2&&r2.cls?r2.cls:'bev'}" id="cahe_${id}">${r2&&r2.ev?r2.ev:''}</span></div>`; })()}
+    <div class="bsub">讓球(主) -0.5 ${bdE.ah.m05.fair.toFixed(2)} | -1 ${bdE.ah.m1.fair.toFixed(2)} | -1.5 ${bdE.ah.m15.fair.toFixed(2)} | +0.5 ${bdE.ah.p05.fair.toFixed(2)}　·　波膽 ${bdE.cs.slice(0,4).map(s=>s[0]+'-'+s[1]).join(' ')}</div>
   </div>`;
 }
-function evCalc(id,key,p){
-  const inp=document.getElementById('bk_'+id+'_'+key), e=document.getElementById('ev_'+id+'_'+key);
-  const v=inp.value.trim();
-  if(v) ODDS[id+'_'+key]=v; else delete ODDS[id+'_'+key];
+function marketBoardFromJ(J){ /* 由現成 joint 砌 marketDefs 需要嘅欄位（輕量） */
+  const _s=(f)=>{let t=0;for(const[x,y,p]of J)if(f(x,y))t+=p;return t;};
+  return {x12:{home:_s((x,y)=>x>y),draw:_s((x,y)=>x===y),away:_s((x,y)=>x<y)},
+    ou25:{over:_s((x,y)=>x+y>2.5)}, btts:_s((x,y)=>x>=1&&y>=1), J};
+}
+function boardCommit(id){
+  const ctx=BOARDCTX[id]; if(!ctx) return;
+  const keys=['h','d','a','o','u','bt','coul','cous','coub','cahl','cahs','cahb'];
+  for(const k of keys){ const el=document.getElementById((k.length<=2?'bk_'+id+'_'+k:k.slice(0,4)+(k.length>4?k.slice(4):'')+'_'+id))||document.getElementById(k+'_'+id)||document.getElementById('bk_'+id+'_'+k);
+    if(!el) continue; const v=(el.value||'').trim();
+    if(v) ODDS[id+'_'+k]=v; else delete ODDS[id+'_'+k];
+    if(['h','d','a','o','u','bt','coub','cahb'].includes(k)) ohSnap(id+'_'+k, v);
+  }
   saveOdds();
-  const r=evKelly(p,parseFloat(v)); if(!r){e.textContent="";e.className="bev";return;}
-  e.textContent=(r.ev>=0?"+":"")+(r.ev*100).toFixed(1)+"% ·K"+(r.qk*100).toFixed(1)+"%"; e.className="bev "+(r.ev>0?"pos":"neg");
+  ctx.anch=anchorFor(id);
+  const bdiv=document.getElementById('bd_'+id);
+  if(bdiv) bdiv.innerHTML=boardHTML(id,ctx.A,ctx.B,ctx.bdM);
 }
 function readScore(id){ const a=document.getElementById('in_'+id+'_a').value, b=document.getElementById('in_'+id+'_b').value;
   if(a===''||b==='') return null; return [Math.max(0,parseInt(a)||0), Math.max(0,parseInt(b)||0)]; }
@@ -1357,7 +1586,7 @@ function toast(msg){ const s=$("#status"); if(s) s.textContent=msg; }
 
 /* 匯出 / 匯入 / 清除 */
 function exportData(){
-  const data=JSON.stringify({ver:2,known:KNOWN,odds:ODDS,follow:[...FOLLOW],champhist:CHIST,exported:new Date().toISOString()});
+  const data=JSON.stringify({ver:2,known:KNOWN,odds:ODDS,ohist:OHIST,boost:BOOST,bank:BANK,follow:[...FOLLOW],champhist:CHIST,exported:new Date().toISOString()});
   try{ const a=document.createElement('a'); a.href='data:application/json;charset=utf-8,'+encodeURIComponent(data);
     a.download='wc2026-data.json'; document.body.appendChild(a); a.click(); a.remove();
     toast('已匯出完整備份（賽果 '+knownCount()+' 場 · 賠率 '+Object.keys(ODDS).length+' 個 · 關注 '+FOLLOW.size+' 隊 · 走勢 '+CHIST.length+' 快照）'); }
@@ -1368,6 +1597,9 @@ function importData(file){
   r.onload=()=>{ try{ const d=JSON.parse(r.result);
     if(d.known&&d.known.g){ KNOWN=d.known; saveKnown(); }
     if(d.odds&&typeof d.odds==='object'){ ODDS=d.odds; saveOdds(); }
+    if(d.ohist&&typeof d.ohist==='object'){ OHIST=d.ohist; saveOH(); }
+    if(d.boost&&typeof d.boost==='object'){ BOOST=d.boost; try{localStorage.setItem('wc26boost',JSON.stringify(BOOST));}catch(e){} }
+    if(isFinite(d.bank)&&d.bank>0){ BANK=d.bank; try{localStorage.setItem('wc26bank',String(BANK));}catch(e){} }
     if(Array.isArray(d.follow)){ FOLLOW=new Set(d.follow); saveFollow(); }
     if(Array.isArray(d.champhist)){ CHIST=d.champhist; saveChampHist(); renderChampTrend(); }
     curPage=null; renderDaily(); toast('已匯入備份'+(d.ver===2?'（完整 v2）':'（舊版：只含賽果）')); }
@@ -1377,7 +1609,7 @@ function importData(file){
 function doClear(){
   KNOWN={g:{},k:{}}; saveKnown(); curPage=null;
   MC_CACHE={key:null,rows:null,N:0}; TEMP=1; prevChampMap=null; lastRows=null;
-  ODDS={}; saveOdds(); CHIST=[]; saveChampHist();
+  ODDS={}; saveOdds(); OHIST={}; saveOH(); BOOST={}; try{localStorage.setItem('wc26boost','{}');}catch(e){} CHIST=[]; saveChampHist();
   const ct=$("#champTrend"); if(ct)ct.innerHTML="";
   const cs=$("#champSummary"); if(cs){cs.classList.add("hide");cs.innerHTML="";}
   renderDaily();
