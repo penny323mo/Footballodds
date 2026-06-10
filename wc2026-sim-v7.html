@@ -1319,6 +1319,13 @@ function matchCard(ref, st){
   else { const t=st.koTeams[ref.m]; if(!t) return `<div class="mc pend"><div class="pendrow"><span class="ttl">${koLabel(ref.m)}</span><span class="pendtxt">對陣待定（要先完成上游賽果）</span></div><div class="mtime">🕒 ${fmtFix('k'+ref.m)}</div></div>`;
     A=t[0]; B=t[1]; known=KNOWN.k[ref.m]; }
   const gs = VENUEADJ?venueFactor(id):1;
+  /* 賽前視角：已記賽果嘅場，剔除本場自身影響重算（預測定格，唔被自己賽果污染） */
+  if(known){ const bak=known;
+    if(ref.kind==='g') delete KNOWN.g[id]; else delete KNOWN.k[ref.m];
+    const eff2=formRatings();
+    if(eff2[A.n]) A=eff2[A.n]; if(eff2[B.n]) B=eff2[B.n];
+    if(ref.kind==='g') KNOWN.g[id]=bak; else KNOWN.k[ref.m]=bak;
+  }
   const an=analyzeT(A,B,gs), bd=marketBoard(an.la,an.lb), o=fairOdds;
   const inA=known?known.ga:'', inB=known?known.gb:'';
   const locked=known?.locked; const simmed=known&&!locked;
