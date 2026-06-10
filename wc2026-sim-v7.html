@@ -279,7 +279,7 @@ td.pos,.pos{color:var(--green)} td.neg,.neg{color:var(--red)}
 <header>
   <div class="wrap">
     <div class="kicker">FIFA World Cup 2026 · USA · CAN · MEX</div>
-    <h1>世界盃 <span>晉級表</span> 模擬器<span class="v2">v5</span></h1>
+    <h1>世界盃 <span>晉級表</span> 模擬器<span class="v2">v7</span></h1>
     <div class="sub">48 隊 · Round of 32 新制 · Annex C 約束解算 · <b>Dixon-Coles 入球模型</b> · <b>per-sim 實力不確定性</b> · <b>主場加成</b> · 實力值已校準貼近市場，並附市場 benchmark。</div>
     <div class="controls">
       <div class="ctl"><label>Monte Carlo 次數</label>
@@ -299,7 +299,7 @@ td.pos,.pos{color:var(--green)} td.neg,.neg{color:var(--red)}
       <label class="ghost" id="importBtn" style="display:inline-flex;align-items:center;cursor:pointer">⬆ 匯入<input type="file" id="importFile" accept="application/json,.json" style="display:none"></label>
     </div>
     <div class="bar"><i id="prog"></i></div>
-    <div class="status" id="status">v5 已載入。撳「跑 Monte Carlo」出機率＋市場對照，或「單次完整賽果」睇一次完整晉級表。</div>
+    <div class="status" id="status">v7 已載入。日常用「賽程聚焦」：每場有預測參考，撳「盤口參考▾」貼 1X2 三價升級市場錨定。入賽果後機率自動後台更新。</div>
   </div>
 </header>
 
@@ -368,7 +368,7 @@ td.pos,.pos{color:var(--green)} td.neg,.neg{color:var(--red)}
   </div>
 
   <footer>
-    v5 模型：實力值經自動校準貼近市場 de-vig 機率｜每場期望入球用 supremacy → <b>Dixon-Coles 修正</b>(ρ=−0.10) 抽比數｜每次模擬每隊由 <b>Normal(rating, σ)</b> 抽真實力（σ 隨風格 42/58/75）｜主場加成 美/墨 +45、加 +35｜淘汰賽加時後十二碼接近擲毫(實力 lean 0.2)。<br>
+    v7 模型：市場校準實力＋攻防分離（賽事內入球殘差學習）＋20年歷史節奏先驗（martj42 數據集，Poisson MLE）｜<b>Dixon-Coles</b>(ρ=−0.10) 抽比數｜per-sim <b>Normal(rating, σ)</b> 不確定性（σ 隨風格同已賽場數衰減）｜主場加成 美/墨 +45、加 +35｜KO 加時→十二碼｜τ 自動校準＋市場幾何池化｜回測：8,081 場 out-of-sample RPS 0.173（基準 0.222），校準桶誤差 <1.2pp。<br>
     32 強第三名配對：官方 8 slot 可收組別名單做 most-constrained-first 解算（等價 Annex C，已驗證 495 組合全部可解）。<br>
     賽程結構截至 2026-06-06 官方公佈。實力值與市場快照屬估算，僅供模擬。
   </footer>
