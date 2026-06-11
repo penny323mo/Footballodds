@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WC2026 模擬器 · 使用說明書</title>
+<style>
+:root{
+  --bg:#0b1020; --bg2:#0e1530; --panel:#131b38; --panel2:#101730;
+  --line:#22305e; --line2:#2c3b6e; --txt:#e8ecfb; --mut:#9aa7d6; --mut2:#6a76a8;
+  --green:#23e6a4; --green-d:#0fae78; --gold:#ffd166; --red:#ff5d7a;
+  --cond:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;
+  --disp:'Arial Narrow','Helvetica Neue',Impact,system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,'PingFang HK','Noto Sans CJK TC',sans-serif;font-size:14.5px;line-height:1.75}
+.wrap{max-width:860px;margin:0 auto;padding:28px 18px 80px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:10px}
+h1{font-family:var(--disp);font-size:30px;margin:0;letter-spacing:.5px;text-transform:uppercase}
+h1 small{color:var(--gold);font-size:15px;font-family:var(--cond);letter-spacing:1px}
+.sub{color:var(--mut);font-family:var(--cond);font-size:14px;margin-top:6px}
+h2{font-family:var(--disp);font-size:21px;color:var(--gold);margin:42px 0 10px;letter-spacing:.4px;border-left:3px solid var(--gold);padding-left:10px}
+h3{font-family:var(--cond);font-size:16px;color:var(--green);margin:22px 0 6px;font-weight:700}
+p{margin:8px 0}
+.panel{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:12px 0}
+.note{color:var(--mut2);font-size:13px;font-family:var(--cond)}
+b{color:var(--txt)}
+code{background:var(--bg2);border:1px solid var(--line2);border-radius:5px;padding:1px 6px;font-size:12.5px;color:var(--green)}
+table{border-collapse:collapse;width:100%;margin:10px 0;font-size:13.5px}
+th{font-family:var(--cond);color:var(--mut2);text-align:left;font-weight:600;padding:6px 8px;border-bottom:1px solid var(--line2)}
+td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+td:first-child{white-space:nowrap}
+/* app 詞彙 chips（同主程式一樣） */
+.chip{display:inline-block;font-family:var(--cond);font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:7px;margin:0 2px;vertical-align:middle;white-space:nowrap}
+.c-lock{color:var(--gold);border:1px solid var(--gold)}
+.c-sim{color:var(--mut2);border:1px solid var(--line2)}
+.c-pri{background:linear-gradient(180deg,var(--green),var(--green-d));color:#04130d}
+.c-anch{color:var(--green);border:1px solid var(--green)}
+.c-mdl{color:var(--gold);border:1px solid var(--gold)}
+.c-pact{background:var(--gold);color:#120c00}
+.c-live{background:var(--red);color:#fff}
+.c-pos{color:var(--green)} .c-mid{color:var(--gold)} .c-neg{color:var(--red)}
+/* 每日流程帶（signature，呼應主程式 stagebar） */
+.loop{display:flex;gap:8px;overflow-x:auto;padding:6px 0 10px}
+.loop .st{flex:0 0 auto;background:var(--panel2);border:1px solid var(--line2);border-radius:10px;padding:10px 13px;min-width:138px}
+.loop .st .n{font-family:var(--disp);color:var(--gold);font-size:17px}
+.loop .st .t{font-family:var(--cond);font-weight:700;font-size:13px;margin:2px 0}
+.loop .st .d{color:var(--mut2);font-size:11.5px;font-family:var(--cond);line-height:1.45}
+.warn{border-left:3px solid var(--red);padding:8px 12px;background:rgba(255,93,122,.06);border-radius:0 8px 8px 0;margin:12px 0;font-size:13.5px}
+.tip{border-left:3px solid var(--green);padding:8px 12px;background:rgba(35,230,164,.06);border-radius:0 8px 8px 0;margin:12px 0;font-size:13.5px}
+ul{margin:6px 0;padding-left:20px}
+li{margin:4px 0}
+footer{margin-top:50px;border-top:1px solid var(--line);padding-top:14px;color:var(--mut2);font-family:var(--cond);font-size:12.5px}
+a{color:var(--green)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>WC2026 模擬器 <small>使用說明書 · v7</small></h1>
+  <div class="sub">世界盃 2026 · 市場錨定定價器 ＋ 賽制情報 ＋ 紀律層 · 單檔離線 · 澳門時間</div>
+</header>
+
+<h2>一、呢個工具係乜（同唔係乜）</h2>
+<div class="panel">
+<p>三支柱定位：</p>
+<ul>
+<li><b>市場錨定定價器</b> — 貼齊一場 1X2 三個價，工具用市場自己嘅實力定價，重推成個衍生盤（大細／讓球／BTTS／波膽）。衍生盤 EV 訊號 = 市場內部自相矛盾，係單人投注者現實執到嘅 edge。</li>
+<li><b>賽制情報</b> — 出線情景、最佳第三名 Annex C 分配、生死戰判定、雙和誘因偵測、條件化晉級鏈。莊家網頁唔提供呢啲。</li>
+<li><b>紀律層</b> — EV 不確定區間（下界&gt;0 先綠）、¼Kelly 注碼、本金佔比警告、賽後 RPS 校準計分卡。</li>
+</ul>
+<p class="note">工具<b>唔係</b>「跑贏市場嘅水晶球」：模型 ratings 由市場冠軍盤校準而嚟，喺世界盃 1X2 大場見到嘅「+EV」最可能解讀係模型誤差。所有純模型 1X2 訊號都會自動標 <span class="chip c-mdl">⚠模型1X2</span> 僅供參考。</p>
+</div>
+
+<h2>二、每日操作流程</h2>
+<div class="loop">
+  <div class="st"><div class="n">①</div><div class="t">開 App → 賽程聚焦</div><div class="d">自動跳今日（澳門日期）。每場見 W/D/L、期望入球、最可能比數、開賽時間</div></div>
+  <div class="st"><div class="n">②</div><div class="t">貼價 → 錨定</div><div class="d">撳「盤口參考▾」，貼齊 1X2 三價即升級市場錨定；衍生盤再貼價出 EV 區間</div></div>
+  <div class="st"><div class="n">③</div><div class="t">睇訊號板</div><div class="d">日頁頂「今日訊號」：下界&gt;0 先綠、✓錨定優先、本金合計佔比監察</div></div>
+  <div class="st"><div class="n">④</div><div class="t">完場 → 確定 🔒</div><div class="d">入真實比數撳「確定 🔒」永久鎖定。後台自動重跑條件化 MC，奪冠機率即時更新</div></div>
+  <div class="st"><div class="n">⑤</div><div class="t">覆盤</div><div class="d">鎖定卡撳「📊 結算▾」睇預測對照＋盤口自動結算；出線形勢頁睇 RPS 計分卡＋訊號結算累計</div></div>
+</div>
+
+<h2>三、賽程聚焦（主頁）</h2>
+<h3>導覽</h3>
+<ul>
+<li><b>輪次列</b>（小組R1/R2/R3 · 32強…決賽）一撳跳去嗰輪首日；<b>日期列</b>一日一頁（34 個比賽日，澳門日期切分），已完成標 ✓</li>
+<li><b>📅 今日</b>跳真實今日；← 前一日／後一日 → 揭頁</li>
+<li><b>🎲 模擬本日</b>：當日所有未賽場一次過抽樣（會跳過已確定 🔒 場次）</li>
+<li><b>📋 任務條</b>（日頁頂自動出現）：「📝 X 場已完未入賽果 →」一撳跳去補入；「⏱ 本頁首場倒數」；「⚠ 雙和 N 場」；「💰 Y/Z 場未貼 1X2」</li>
+<li><b>卡片狀態 chips</b>：開賽前 48 小時內顯示 ⏱ 倒數；<span class="chip c-anch">💰 已錨定</span>＝1X2 三價齊／<span class="chip c-mdl">💰 已貼價</span>＝貼咗部分——一眼知邊場做咗功課</li>
+<li><b>⚙ 工具</b>（頁頂摺疊）：MC 次數/風格/匯出匯入等收埋喺度，日常唔阻位，撳開會記住狀態</li>
+</ul>
+<h3>每場卡片</h3>
+<ul>
+<li>隊名（☆ 撳一下加<b>關注</b>，關注場金框高亮，「★ 只睇關注」過濾）＋ form 實力值</li>
+<li><b>W/D/L 機率條 · 期望入球 · 預測比數 · 最可能比數 Top 5</b> — 模型參考核心</li>
+<li>🕒 日期(星期) 時間（澳門）· 場館城市；<span class="chip c-live">● 進行中</span>／已完場待入 依真實時間自動標示</li>
+<li><b>⛰ 場地修正</b>（toggle）：高海拔（墨西哥城 ×0.93、瓜達拉哈拉 ×0.96）＋高溫午場（達拉斯／侯斯頓等 ×0.96）微調期望入球，只影響參考卡</li>
+</ul>
+<h3>賽果三態</h3>
+<table>
+<tr><th>動作</th><th>狀態</th><th>行為</th></tr>
+<tr><td><span class="chip c-pri">確定 🔒</span></td><td>永久鎖定</td><td>真實賽果專用。唔俾覆蓋／清除／重模擬；要改先撳「✏ 修改」兩步解鎖（降級暫定，比數保留）。KO 場用「隊名晉級 🔒」</td></tr>
+<tr><td>儲存</td><td>暫定 <span class="chip c-sim">🔓</span></td><td>入咗比數但未確認，可改可清</td></tr>
+<tr><td>🎲 模擬</td><td>暫定 <span class="chip c-sim">🔓</span></td><td>依模型抽樣一個賽果（KO 平手自動加時→十二碼，標 (P)）；可重抽</td></tr>
+</table>
+<p><b>🗑 清模擬</b> = 只清所有暫定，確定賽果不動；<b>🗑 清全部</b> = 兩步確認核彈（連賠率／走勢／本金／實力修改都重置）。</p>
+<h3>📊 結算▾（鎖定後嘅賽後對貼）</h3>
+<ul>
+<li><b>預測對照</b>：賽前首選 vs 實際（✓命中/✗走）＋本場 RPS；賽前最可能比數 vs 實際比數（附實際比數喺賽前分佈嘅機率同排名）；xG vs 實際入球逐邊殘差</li>
+<li><b>盤口結算</b>：你貼過價嘅所有盤（1X2／大細／BTTS／自訂線）用實際比數自動結算，四分一球正確處理半贏半輸；每行顯示賽前訊號講過乜（✓＝訊號同結果一致）、每注 1 單位損益、底行合計</li>
+<li>賽前數據用「賽前視角」重算（同卡面定格、RPS 快照同一口徑）；結算用你最後貼嘅價</li>
+</ul>
+<p class="note">任何儲存／確定／模擬後 1.5 秒，後台自動跑條件化 Monte Carlo（5,000–10,000 次，Worker 唔阻 UI），狀態列即顯示最新 Top 3 奪冠機率，機率榜同步更新。</p>
+
+<h2>四、盤口參考板（每場「盤口參考▾」）</h2>
+<h3>兩種定價來源</h3>
+<table>
+<tr><th>來源</th><th>觸發</th><th>意義</th></tr>
+<tr><td><span class="chip c-anch">市場錨定</span></td><td>1X2 三格齊有效價（離開輸入格生效）</td><td>Power 法除水 → 反解 λ 令模型精確重現市場 W/D/L → 衍生盤全部由市場錨定分佈重推。<b>1X2 本身標「基準」唔評 EV</b>；衍生盤 EV = 市場內部矛盾訊號（最可信）。Badge 顯示水位 %</td></tr>
+<tr><td><span class="chip c-mdl">純模型</span></td><td>1X2 未貼齊</td><td>沿用模型定價。衍生盤訊號標「模型·衍生」，1X2 訊號標 <span class="chip c-mdl">⚠模型1X2</span> 僅供參考</td></tr>
+</table>
+<h3>EV 點樣讀</h3>
+<div class="panel">
+<p>格式：<b>+4.2%（+1.6〜+6.8）·K1.3%</b> = EV 點估計（不確定區間）· ¼Kelly 建議注碼佔本金</p>
+<ul>
+<li><span class="c-pos">綠</span> = 區間<b>下界 &gt; 0</b>（連最差情境都正 EV）→ 可操作訊號</li>
+<li><span class="c-mid">琥珀</span> = EV 正但下界穿零 → 觀察，唔好重注</li>
+<li><span class="c-neg">紅</span> = 負 EV</li>
+</ul>
+<p class="note">區間來源：模型模式用 σ／√(1+已賽場數) 擾動實力差；錨定模式用兩種除水法之差。區間只係真實不確定性嘅<b>下界</b>（未包模型結構誤差），所以「下界&gt;0 先落注」係保守正確嘅紀律。</p>
+</div>
+<h3>其他</h3>
+<ul>
+<li><b>自訂大細／讓球</b>：入任何線（含四分一球 2.25／-0.75）＋揀方向 → 即出公平價；貼莊家價 → EV 區間。澳門盤常見線全部覆蓋</li>
+<li><b>線路箭頭</b>：賠率每次改動自動存快照，顯示 ↘縮／↗漂；價縮而模型同向 → 「市場趨向模型」＝模型早著先機嘅證據（零記帳 CLV 代替品）</li>
+<li>所有貼過嘅價持久化，re-render／聽日再開自動還原</li>
+</ul>
+
+<h2>五、今日訊號板＋本金</h2>
+<ul>
+<li>日頁頂自動聚合當日所有已貼價嘅盤，按 tier（✓錨定 → 模型·衍生 → ⚠模型1X2）再按 EV 下界排，取頭 4</li>
+<li>入<b>本金</b>後：自動合計「下界&gt;0 可操作訊號」嘅 ¼Kelly 建議注碼，<b>佔本金超 5% 變紅</b>並建議按比例縮；同場多注會提示「相關，勿當獨立」</li>
+<li>已確定 🔒 完場嘅場自動剔出訊號板</li>
+</ul>
+
+<h2>六、⚠ 雙和齊出線（默契和偵測）</h2>
+<div class="panel">
+<p>小組<b>尾輪</b>場次自動用解析枚舉檢測：和局令兩隊出線機率 ≥80%，<b>且</b>「和 vs 輸」差距兩邊都 ≥20 個百分點（雙方真有誘因先掛旗 <span class="chip c-pact">⚠ 雙和齊出線</span>；單方穩袋唔算）。</p>
+<p>掛旗場出現「和局誘因」掣：開咗會將 W/D/L 顯示混入 25% 和局（標明係 heuristic，唔影響大細盤）。已錨定嘅場唔使開——市場已 price 咗。</p>
+</div>
+
+<h2>七、分析▾（每場深入面板）</h2>
+<ul>
+<li><b>賽事內近況</b>：每隊最近 3 場真實賽果 chip（W／D／L）</li>
+<li><b>實力分解</b>：有效實力（賽事中 Elo Δ）· 休息日數（真實賽程計）</li>
+<li><b>20 年戰績</b>：場數／勝率／場均入失 ＋ <b>節奏先驗</b>（+開放多入球型／−低事件防守型）＋ 賽事學習攻防 Δ</li>
+<li><b>出線影響</b>（小組賽）：本場 勝／和／輸 三情景下兩隊各自嘅精確出線機率（解析枚舉，零抽樣誤差）——一眼判生死戰</li>
+<li><b>晉級路徑</b>（KO）：本場勝方下一場對邊個，對手未定時顯示「M90 勝方（A x% / B y%）」</li>
+</ul>
+
+<h2>八、機率榜</h2>
+<ul>
+<li><b>▶ 跑 Monte Carlo</b>：手動高精度（建議 10,000–20,000）；平時唔使撳——入賽果後後台自動跑。賽果同設定冇變會沿用快取唔重跑</li>
+<li>已知賽果<b>完全固定</b>，MC 只模擬未賽部分（標題顯示「已條件化於 X 場」）</li>
+<li><b>Temperature τ</b>：MC 完成後自動黃金分割校準（對市場 9 隊 Brier 最小化），修正模型過度自信；可手動重設 τ=1</li>
+<li><b>同市場幾何池化</b>：0／25／50／75%，將奪冠機率向市場 de-vig 拉近（log-linear，比線性更 calibrated）</li>
+<li><b>🔍 市場分歧</b>：模型 vs 市場 Top 3 差距 callout ＋ 市場欄 ▲▼ 箭頭——分歧大 = 最值得研究</li>
+<li><b>📈 奪冠走勢</b>：每次 MC 記快照，SVG 顯示 Top 5 隊機率隨賽事推進升跌（Δ 箭頭喺賽程聚焦快覽都有）</li>
+<li><b>±SE 讀數誤差</b>：奪冠欄每個數附 ±（1σ 抽樣誤差，5k≈±0.5pp、20k≈±0.25pp）——引用兩隊細差異前，確認差距大過兩倍誤差先好認真。盤口板定價係解析閉式，完全唔受 MC 次數影響</li>
+<li><b>📋 模型驗證紀錄</b>：可摺疊，記低成個回測設計同數字（見附錄）</li>
+</ul>
+
+<h2>九、出線形勢</h2>
+<ul>
+<li>每組即時積分榜（賽／勝／和／負／得失／分＋出線區標示）＋ <b>解析出線</b>欄（W/D/L 全枚舉精確機率，條件化已知賽果，同分位置均分）</li>
+<li><b>最佳第三名爭奪榜</b>：8 席切線高亮，✅入圍／❌出局</li>
+<li><b>校準計分卡</b>：手動賽果嘅賽前機率自動快照（防洩漏：排除本場自身影響）→ 平均 RPS／log loss vs 基準 0.222；入滿 8 場出 <b>Reliability 棒</b>（預測機率 vs 實際命中，三桶）——預測棒長過命中棒 = 過度自信</li>
+<li><b>訊號結算</b>：所有鎖定場 × 已貼價 × 賽前 EV&gt;0 嘅盤，每注 1 單位嘅累計損益＋命中率——RPS 量「機率準唔準」，呢個量「跟訊號賺唔賺」</li>
+</ul>
+
+<h2>十、晉級表 / 備份</h2>
+<ul>
+<li><b>🎯 模擬一次</b>：產生一個完整賽果樹（條件化已知賽果），睇成棵 bracket＋分組賽果展開</li>
+<li><b>⬇ 匯出</b>：完整備份（賽果／賠率／線路歷史／關注／走勢快照／誘因標記／本金）一個 JSON；<b>⬆ 匯入</b>還原，舊版檔案兼容。localStorage 係單機嘅——<b>換機／清 cache 前必匯出</b></li>
+</ul>
+
+<h2>附錄 · 模型方法＋驗證</h2>
+<table>
+<tr><th>組件</th><th>規格</th></tr>
+<tr><td>實力 rating</td><td>市場冠軍盤校準（1485–2110）＋主辦國加成（美+45／墨+45／加+35）</td></tr>
+<tr><td>比分模型</td><td>Dixon-Coles 修正 Poisson（ρ=−0.10），λ = 1.35·exp(0.34·實力差/150 ＋ 攻 ＋ 對方防)</td></tr>
+<tr><td>賽事內學習</td><td>Elo K=24（MOV 加權）＋ 攻防 offset（入球殘差，LR=0.035，封頂 ±30%）</td></tr>
+<tr><td>20 年先驗</td><td>martj42 數據集 19,646 場（2006–2026），Poisson MLE＋4 年半衰期 → 節奏偏斜 x（封頂 ±15%，只郁總入球唔郁強弱）</td></tr>
+<tr><td>不確定性</td><td>每次模擬實力 ~N(r, σ)，σ 隨已賽場數衰減；「模型風格」三檔（偏實力／標準／多冷門）控制 σ 同入球波幅</td></tr>
+<tr><td>KO</td><td>平手 → 加時（λ×0.34）→ 十二碼（近五五波，輕微實力傾斜）</td></tr>
+<tr><td>賽制</td><td>官方 2026 章程：12 組 48 隊、8 個最佳第三（Annex C 槽位約束 bipartite 配對，495 組合全驗證）、104 場官方賽程（澳門時間）</td></tr>
+</table>
+<div class="tip"><b>回測驗證</b>（2026-06-08）：walk-forward 19,646 場，out-of-sample 2018–2026 共 8,081 場（先驗只用 2006–2017 擬合，零洩漏）。W/D/L RPS 0.173 vs 基準 0.222（−22%）；斜率 0.34 位處最優平原；攻防學習 t=−4.3 顯著、OU-Brier −3.2%；先驗冷啟動（每隊頭 5 場＝世界盃情境）t=−2.8 顯著；校準桶 45–100% 區間預測 vs 命中誤差 &lt;1.2pp。</div>
+
+<h2>注意事項</h2>
+<div class="warn">
+<ul style="margin:0;padding-left:18px">
+<li><b>必須喺真瀏覽器／GitHub Pages 開</b>——App 內檔案預覽會空白（沙盒），持久化／匯出／Worker 都要真瀏覽器先有</li>
+<li>localStorage 綁定瀏覽器＋網域：換機、清 cache、轉網域都會冇晒 → 養成匯出習慣</li>
+<li>純模型 1X2 訊號僅供參考；可操作訊號 = <span class="chip c-anch">✓錨定</span> 衍生盤且 EV 下界 &gt; 0</li>
+<li>陣容／傷停模型反映唔到——用「⚙ 改實力值」人手 nudge：<b>自動記住</b>（跨日有效）、自動觸發後台 MC 重算、編輯器顯示同預設嘅 Δ、一撳「還原全部預設」；修改值入埋備份檔</li>
+<li>賭波有風險。呢個係分析參考工具，所有數字都係機率唔係保證，量力而為</li>
+</ul>
+</div>
+
+<footer>WC2026 Monte Carlo 模擬器 v7 · 單檔離線 HTML · 部署：將 wc2026-sim-v7.html 上傳 GitHub Pages 即用 · 本說明書可一併部署</footer>
+
+</div>
+</body>
+</html>

@@ -219,10 +219,22 @@ footer{color:var(--mut2);font-size:12px;text-align:center;margin-top:40px;line-h
 .tier.warn{color:var(--gold);border-color:var(--gold)}
 .bev.mid{color:var(--gold)}
 .bev.mut2{color:var(--mut2)}
+.sem{color:var(--mut2);font-size:9.5px;font-weight:400;margin-left:2px}
 .ohm{font-family:var(--cond);font-size:10px;color:var(--gold);margin-left:5px}
 .stt.pact{background:var(--gold);color:#120c00}
 .bankrow{font-family:var(--cond);font-size:12px;color:var(--mut);margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}
 .bankrow input{width:70px}
+.toolsum{cursor:pointer;font-family:var(--cond);font-size:13px;color:var(--mut);padding:6px 0;user-select:none}
+#toolsBox[open] .toolsum{color:var(--gold)}
+.navstick{position:sticky;top:0;z-index:30;background:linear-gradient(180deg,var(--bg) 88%,rgba(11,16,32,0));padding:4px 0 2px}
+.taskbar{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 10px}
+.task{font-family:var(--cond);font-size:12px;padding:5px 10px;border-radius:8px;border:1px solid var(--line2);color:var(--mut);background:var(--panel2)}
+button.task{cursor:pointer}
+.task.warn{border-color:var(--red);color:var(--red)}
+.task.gold{border-color:var(--gold);color:var(--gold)}
+.stt.cd{background:var(--bg2);border:1px solid var(--line2);color:var(--mut2)}
+.stt.priced{background:rgba(35,230,164,.12);border:1px solid var(--green);color:var(--green)}
+.stt.priced2{background:var(--bg2);border:1px solid var(--gold);color:var(--gold)}
 .stageacts{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:-4px 0 12px}
 .stageacts .hint{font-family:var(--cond);color:var(--mut2);font-size:11px}
 .done-badge{font-family:var(--cond);font-size:12px;color:var(--green);margin-left:auto}
@@ -280,7 +292,8 @@ td.pos,.pos{color:var(--green)} td.neg,.neg{color:var(--red)}
   <div class="wrap">
     <div class="kicker">FIFA World Cup 2026 · USA · CAN · MEX</div>
     <h1>世界盃 <span>晉級表</span> 模擬器<span class="v2">v7</span></h1>
-    <div class="sub">48 隊 · Round of 32 新制 · Annex C 約束解算 · <b>Dixon-Coles 入球模型</b> · <b>per-sim 實力不確定性</b> · <b>主場加成</b> · 實力值已校準貼近市場，並附市場 benchmark。</div>
+    <div class="sub">48 隊 · Round of 32 新制 · <b>Dixon-Coles</b> · 攻防分離＋20年先驗 · <b>市場錨定定價</b>（貼齊 1X2 即除水反解衍生盤）· EV 區間 · 雙和偵測 · 已對 8,081 場 out-of-sample 回測。</div>
+    <details id="toolsBox"><summary class="toolsum">⚙ 工具（Monte Carlo · 實力 · 清除 · 備份）</summary>
     <div class="controls">
       <div class="ctl"><label>Monte Carlo 次數</label>
         <select id="runs"><option>1000</option><option selected>5000</option><option>10000</option><option>20000</option></select></div>
@@ -298,6 +311,7 @@ td.pos,.pos{color:var(--green)} td.neg,.neg{color:var(--red)}
       <button class="ghost" id="exportBtn">⬇ 匯出</button>
       <label class="ghost" id="importBtn" style="display:inline-flex;align-items:center;cursor:pointer">⬆ 匯入<input type="file" id="importFile" accept="application/json,.json" style="display:none"></label>
     </div>
+    </details>
     <div class="bar"><i id="prog"></i></div>
     <div class="status" id="status">v7 已載入。日常用「賽程聚焦」：每場有預測參考，撳「盤口參考▾」貼 1X2 三價升級市場錨定。入賽果後機率自動後台更新。</div>
   </div>
@@ -334,6 +348,7 @@ td.pos,.pos{color:var(--green)} td.neg,.neg{color:var(--red)}
     <div id="probEmpty" class="note">入完賽果後會<b>自動後台更新</b>條件化機率（5,000 次，Worker 跑唔阻 UI）。撳 <b>▶ 跑 Monte Carlo</b> 可跑高精度版（10,000–20,000 次）。</div>
     <div id="probContent" class="hide">
       <div id="dvLine" class="note" style="margin:6px 0 8px"></div>
+      <div class="note" style="margin:2px 0">奪冠欄 ± 為抽樣讀數誤差（1σ，加大次數按 √N 收窄：5k≈±0.5pp、20k≈±0.25pp）。盤口板所有定價為解析閉式，不受 MC 次數影響。</div>
       <details class="note" style="margin:4px 0 8px"><summary style="cursor:pointer">📋 模型驗證紀錄（2026-06-08 全面校準）</summary>
         Walk-forward 回測：19,646 場國際賽（2006–2026），out-of-sample 測試期 2018–2026 共 8,081 場，先驗只用 2006–2017 擬合（零洩漏）。
         結果：W/D/L RPS 0.173（基準 0.222，−22%）；斜率 F=0.34 位處最優平原（0.34–0.38）；攻防在線學習顯著（t=−4.3，OU-Brier −3.2%）；
@@ -669,6 +684,13 @@ async function runMonteCarloInline(N, onProgress){
    5. RENDER
    ============================================================ */
 const $=s=>document.querySelector(s);
+/* 實力 override（傷停/陣容 nudge）持久化 */
+function loadOvr(){ try{const v=JSON.parse(localStorage.getItem('wc26ovr')); return v&&typeof v==='object'?v:{};}catch(e){return {};} }
+let OVR=loadOvr();
+const RDEFAULT={};   // 記低出廠值
+for(const g of GL) GROUPS[g].forEach(x=>{ RDEFAULT[x[0]]=x[2]; if(isFinite(OVR[x[0]])) x[2]=OVR[x[0]]; });
+function saveOvr(){ try{localStorage.setItem('wc26ovr',JSON.stringify(OVR));}catch(e){} }
+function ovrKey(){ return Object.keys(OVR).length?JSON.stringify(OVR):''; }
 let TEAMS_FLAT=buildTeams();
 const fl=t=>`<span class="fl">${t.f}</span>`;
 
@@ -830,7 +852,8 @@ function renderProb(rows, N){
     const tds=cols.map(c=>{
       const v=r[c[0]], pct=v*100, cls=c[0]==="champ"?"pcell win-c":"pcell";
       const txt=pct>=99.5?"100%":(pct<0.5&&pct>0?"<1%":(pct===0?"–":pct.toFixed(pct<10?1:0)+"%"));
-      return `<td class="${cls}"><div class="fillb" style="width:${Math.min(v*100,100)}%"></div><span class="v">${txt}</span></td>`;
+      const se=c[0]==="champ"&&v>0&&v<1?`<small class="sem">±${(Math.sqrt(v*(1-v)/N)*100).toFixed(1)}</small>`:"";
+      return `<td class="${cls}"><div class="fillb" style="width:${Math.min(v*100,100)}%"></div><span class="v">${txt}${se}</span></td>`;
     }).join("");
     let mk='<span style="color:var(--mut2)">–</span>';
     if(MARKET[r.n]!==undefined){ const dv=r.champ*100-MARKET[r.n];
@@ -876,6 +899,24 @@ function renderStandings(){
     scored.push({id,rps:computeRPS(kn.pW,kn.pD,kn.pL,kn.ga,kn.gb),ll:computeLL(kn.pW,kn.pD,kn.pL,kn.ga,kn.gb),pTop:ps[top],hit:top===act?1:0}); };
   for(const[id,kn] of Object.entries(KNOWN.g)){if(kn.pW!==undefined)pushScored(id,kn);}
   for(const[m,kn] of Object.entries(KNOWN.k)){if(kn.pW!==undefined)pushScored('k'+m,kn);}
+  // 累計訊號結算（鎖定場 × 已貼價 × 賽前 EV>0，每注 1 單位）
+  let sigN=0,sigHit=0,sigPL=0;
+  const settleOne=(id,kind,m,kn)=>{
+    if(!kn.locked) return;
+    const bak=kn; if(kind==='g')delete KNOWN.g[id]; else delete KNOWN.k[m];
+    const eff2=formRatings();
+    let A2,B2;
+    if(kind==='g'){ A2=eff2[GROUPS[id[1]][+id[2]][0]]; B2=eff2[GROUPS[id[1]][+id[3]][0]]; }
+    else { A2=eff2[kn.a]; B2=eff2[kn.b]; }
+    if(kind==='g')KNOWN.g[id]=bak; else KNOWN.k[m]=bak;
+    if(!A2||!B2) return;
+    const an2=analyzeT(A2,B2), bd2=marketBoard(an2.la,an2.lb);
+    const r=settleMatchOdds(kind==='g'?id:'k'+m, kn.ga, kn.gb, an2, bd2);
+    for(const row of r.rows){ if(row.anch||row.ev==null||row.ev<=0) continue;
+      sigN++; if(row.pl>0)sigHit++; sigPL+=row.pl; }
+  };
+  for(const[id,kn] of Object.entries(KNOWN.g)) settleOne(id,'g',null,kn);
+  for(const[m,kn] of Object.entries(KNOWN.k)) settleOne('k'+m,'k',+m,kn);
   if(scored.length){
     const mr=scored.reduce((s,x)=>s+x.rps,0)/scored.length, ml=scored.reduce((s,x)=>s+x.ll,0)/scored.length;
     const naive=0.222;
@@ -884,6 +925,7 @@ function renderStandings(){
         <div class="metric"><div class="k">平均 RPS ↓</div><div class="v" style="color:${mr<0.20?'var(--green)':mr<0.24?'var(--gold)':'var(--red)'}">${mr.toFixed(3)}<small> / 基準 ${naive}</small></div></div>
         <div class="metric"><div class="k">平均 log loss ↓</div><div class="v">${ml.toFixed(3)}</div></div>
         <div class="metric"><div class="k">場數</div><div class="v">${scored.length}</div></div>
+        ${sigN?`<div class="metric"><div class="k">訊號結算（EV&gt;0 每注1單位）</div><div class="v" style="color:${sigPL>=0?'var(--green)':'var(--red)'}">${sigPL>=0?'+':''}${sigPL.toFixed(2)}<small> · ${sigHit}/${sigN} 中</small></div></div>`:''}
       </div>
       <div class="note">RPS（Ranked Probability Score）0 完美 · ${naive} 三七平基準。你的模型 RPS&lt;${naive} 代表有預測力。</div>
       ${(()=>{ if(scored.length<8) return '<div class="note">入滿 8 場後顯示 reliability 校準棒（預測機率 vs 實際命中率）。</div>';
@@ -1214,6 +1256,86 @@ function restDays(name, id, st){
     if(plays && (prev===null||t>prev)) prev=t; }
   return prev===null?null:Math.round((tNow-prev)/86400000);
 }
+/* ---- 賽後結算 ---- */
+function settleLine(kind,side,L,ga,gb,book){ /* 回傳每注1單位損益（含四分一球半贏半輸） */
+  const b=parseFloat(book); if(!isFinite(b)||b<=1) return null;
+  const isQ=Math.abs((L*2)%1)>1e-9, legs=isQ?[L-0.25,L+0.25]:[L];
+  let pl=0, parts=[];
+  for(const leg of legs){
+    const m = kind==='ou' ? (ga+gb-leg)*side : ((side===1?ga-gb:gb-ga)+leg);
+    if(m>1e-9){ pl+=(b-1)/legs.length; parts.push('贏'); }
+    else if(m<-1e-9){ pl+=-1/legs.length; parts.push('輸'); }
+    else parts.push('和');
+  }
+  const res = parts.length===1?parts[0] : (parts.join('')==='贏和'||parts.join('')==='和贏'?'半贏':parts.join('')==='輸和'||parts.join('')==='和輸'?'半輸':parts[0]===parts[1]?parts[0]:'半');
+  return {pl,res};
+}
+function settleSimple(key,ga,gb,book){ /* 1X2 / 大細2.5 / BTTS */
+  const b=parseFloat(book); if(!isFinite(b)||b<=1) return null;
+  let win;
+  if(key==='h')win=ga>gb; else if(key==='d')win=ga===gb; else if(key==='a')win=ga<gb;
+  else if(key==='o')win=ga+gb>2.5; else if(key==='u')win=ga+gb<2.5;
+  else if(key==='bt')win=ga>=1&&gb>=1; else return null;
+  return {pl:win?(b-1):-1,res:win?'贏':'輸'};
+}
+function settleMatchOdds(id,ga,gb,anPre,bdPre){ /* 結算本場所有已貼價盤；回傳 rows + 合計 */
+  const anch=anchorFor(id);
+  const J = anch?anch.bd.J:bdPre.J;
+  const defs=marketDefs({n:''},{n:''},anch?anch.bd:bdPre);
+  const rows=[]; let tot=0,n=0;
+  const lblMap={h:'主勝',d:'和',a:'客勝',o:'大2.5',u:'細2.5',bt:'兩隊入球'};
+  for(const k of ['h','d','a','o','u','bt']){
+    const bk=ODDS[id+'_'+k]; if(!bk) continue;
+    const st=settleSimple(k,ga,gb,bk); if(!st) continue;
+    const def=defs.find(x=>x.key===k);
+    const ev=def?def.p*parseFloat(bk)-1:null;
+    rows.push({lbl:lblMap[k],bk:parseFloat(bk),res:st.res,pl:st.pl,ev,anch:!!anch&&(k==='h'||k==='d'||k==='a')?'基準':null});
+    tot+=st.pl;n++;
+  }
+  const cl=parseFloat(ODDS[id+'_coul']), cs=parseInt(ODDS[id+'_cous']||'1'), cb=ODDS[id+'_coub'];
+  if(isFinite(cl)&&cb){ const st=settleLine('ou',cs,cl,ga,gb,cb);
+    if(st){ const q=lineBet(J,'ou',cs,cl); rows.push({lbl:(cs===1?'大':'細')+cl,bk:parseFloat(cb),res:st.res,pl:st.pl,ev:q.win*(parseFloat(cb)-1)-q.lose}); tot+=st.pl;n++; } }
+  const al=parseFloat(ODDS[id+'_cahl']), as_=parseInt(ODDS[id+'_cahs']||'1'), ab=ODDS[id+'_cahb'];
+  if(isFinite(al)&&ab){ const st=settleLine('ah',as_,al,ga,gb,ab);
+    if(st){ const q=lineBet(J,'ah',as_,al); rows.push({lbl:(as_===1?'主':'客')+'讓'+al,bk:parseFloat(ab),res:st.res,pl:st.pl,ev:q.win*(parseFloat(ab)-1)-q.lose}); tot+=st.pl;n++; } }
+  return {rows,tot,n,anch:!!anch};
+}
+function postSummaryHTML(ref,id,A,B,known,anPre,bdPre){
+  const ga=known.ga, gb=known.gb;
+  const act=ga>gb?0:(ga===gb?1:2);
+  const pW=known.pW!==undefined?known.pW:anPre.pW, pD=known.pW!==undefined?known.pD:anPre.pD, pL=known.pW!==undefined?known.pL:anPre.pL;
+  const ps=[pW,pD,pL], top=ps.indexOf(Math.max(...ps));
+  const hit=top===act;
+  const rps=computeRPS(pW,pD,pL,ga,gb);
+  // 實際比數喺賽前分佈嘅機率＋排名
+  const sorted=bdPre.J.slice().sort((x,y)=>y[2]-x[2]);
+  const idx=sorted.findIndex(s=>s[0]===Math.min(ga,7)&&s[1]===Math.min(gb,7));
+  const pScore=idx>=0?sorted[idx][2]:0;
+  const outLbl=['主勝','和','客勝'];
+  let html=`<div class="gsec-h" style="margin:2px 0 4px">📊 預測對照</div>
+  <table class="ptbl an-tbl"><tr><th class="l">項目</th><th class="l">賽前</th><th class="l">實際</th><th class="l">評</th></tr>
+  <tr><td class="l">勝負</td><td class="l">${outLbl[top]} ${(ps[top]*100).toFixed(0)}%（首選）</td><td class="l">${outLbl[act]} ${ga}-${gb}</td><td class="l">${hit?'<span class="qok">✓ 命中</span>':'<span class="qno">✗ 走</span>'} · RPS ${rps.toFixed(3)} ${rps<0.222?'<small class="qok">優於基準</small>':'<small class="qno">差過基準</small>'}</td></tr>
+  <tr><td class="l">比數</td><td class="l">最可能 ${anPre.top[0][0]}-${anPre.top[0][1]}（${(anPre.top[0][2]*100).toFixed(0)}%）</td><td class="l">${ga}-${gb}</td><td class="l">賽前機率 ${(pScore*100).toFixed(1)}%${idx>=0?'（第 '+(idx+1)+' 可能）':''}</td></tr>
+  <tr><td class="l">入球</td><td class="l">xG ${anPre.la.toFixed(2)} — ${anPre.lb.toFixed(2)}</td><td class="l">${ga} — ${gb}</td><td class="l">殘差 ${(ga-anPre.la)>=0?'+':''}${(ga-anPre.la).toFixed(2)} / ${(gb-anPre.lb)>=0?'+':''}${(gb-anPre.lb).toFixed(2)}</td></tr></table>`;
+  const st=settleMatchOdds(id,ga,gb,anPre,bdPre);
+  if(st.n){
+    html+=`<div class="gsec-h" style="margin:10px 0 4px">💰 盤口結算（每注 1 單位 · 用你最後貼嘅價）</div>
+    <table class="ptbl an-tbl"><tr><th class="l">盤</th><th>價</th><th>賽前訊號</th><th>結果</th><th>損益</th></tr>`;
+    for(const r of st.rows){
+      const evTxt=r.anch?'<span class="mut">基準</span>':(r.ev!=null?((r.ev>=0?'+':'')+(r.ev*100).toFixed(1)+'%'):'–');
+      const evRight=r.ev!=null&&!r.anch?((r.ev>0&&r.pl>0)||(r.ev<=0&&r.pl<=0)?' ✓':' ✗'):'';
+      html+=`<tr><td class="l">${r.lbl}</td><td>${r.bk.toFixed(2)}</td><td>${evTxt}${evRight}</td><td>${r.res}</td><td class="${r.pl>0?'pos':r.pl<0?'neg':''}">${r.pl>=0?'+':''}${r.pl.toFixed(2)}</td></tr>`;
+    }
+    html+=`<tr><td class="l" colspan="4"><b>合計（${st.n} 盤）</b></td><td class="${st.tot>0?'pos':st.tot<0?'neg':''}"><b>${st.tot>=0?'+':''}${st.tot.toFixed(2)}</b></td></tr></table>`;
+  } else html+=`<div class="note">本場未貼過莊家價，冇盤口可結算。</div>`;
+  if(ref.kind==='k') html+=`<div class="note">⚠ KO 場：結算以你輸入嘅比數為準；如比數含加時，大細／讓球結算可能同莊家 90 分鐘規則唔同。</div>`;
+  return `<div class="an-panel">${html}</div>`;
+}
+function toggleSettle(id){ const el=document.getElementById('se_'+id); if(!el) return;
+  if(el.classList.contains('hide') && !el.innerHTML){ const c=ANALCTX[id]; const b=BOARDCTX[id];
+    if(c&&b){ const known=c.ref.kind==='g'?KNOWN.g[id]:KNOWN.k[c.ref.m];
+      if(known) el.innerHTML=postSummaryHTML(c.ref,id,b.A,b.B,known,b.an,b.bdM); } }
+  el.classList.toggle('hide'); }
 function analysisHTML(ref,id,A,B,st){
   const baseT=buildTeams();
   const rowT=(T)=>{
@@ -1242,6 +1364,34 @@ function toggleAnal(id){ const el=document.getElementById('an_'+id); if(!el) ret
 function loadBank(){ try{const v=parseFloat(localStorage.getItem('wc26bank')); return isFinite(v)&&v>0?v:0;}catch(e){return 0;} }
 let BANK=loadBank();
 function setBank(v){ BANK=parseFloat(v)||0; try{localStorage.setItem('wc26bank',String(BANK));}catch(e){} renderDaily(curPage); }
+function fmtCD(ms){ const h=Math.floor(ms/3600e3), m=Math.floor(ms%3600e3/60e3);
+  return h>=24?Math.floor(h/24)+'日'+(h%24)+'h':(h>0?h+'h':'')+m+'m'; }
+function dailyTasks(pg, idx, st, now){
+  now=now||Date.now();
+  let pend=0, pendIdx=null;
+  for(let k=0;k<PAGES.length;k++){
+    for(const it of PAGES[k].items){ const ref=it.ref, id=ref.id;
+      const x=FIX[id]; if(!x) continue;
+      if(matchInstant(x)+2.2*3600e3>now) continue;
+      if(ref.kind==='k' && !st.koTeams[ref.m] && !KNOWN.k[ref.m]) continue;
+      const kn=ref.kind==='g'?KNOWN.g[id]:KNOWN.k[ref.m];
+      if(!kn||!kn.locked){ pend++; if(pendIdx===null)pendIdx=k; } } }
+  let nextT=null;
+  for(const it of pg.items){ const x=FIX[it.ref.id]; if(!x)continue; const t=matchInstant(x); if(t>now&&(nextT===null||t<nextT))nextT=t; }
+  let pacts=0; for(const it of pg.items){ try{ if(drawPact(it.ref,st)) pacts++; }catch(e){} }
+  let unpriced=0,total=0;
+  for(const it of pg.items){ const ref=it.ref,id=ref.id;
+    const kn=ref.kind==='g'?KNOWN.g[id]:KNOWN.k[ref.m]; if(kn&&kn.locked)continue;
+    if(ref.kind==='k'&&!st.koTeams[ref.m])continue;
+    total++;
+    if(!(ODDS[id+'_h']&&ODDS[id+'_d']&&ODDS[id+'_a'])) unpriced++; }
+  const chips=[];
+  if(pend>0) chips.push(`<button class="task warn" onclick="renderDaily(${pendIdx})">📝 ${pend} 場已完未入賽果 →</button>`);
+  if(nextT!==null) chips.push(`<span class="task">⏱ 本頁首場 ${fmtCD(nextT-now)} 後開賽</span>`);
+  if(pacts>0) chips.push(`<span class="task gold">⚠ 雙和齊出線 ${pacts} 場</span>`);
+  if(total>0&&unpriced>0) chips.push(`<span class="task">💰 ${unpriced}/${total} 場未貼 1X2（貼齊升級錨定）</span>`);
+  return chips.length?`<div class="taskbar">${chips.join('')}</div>`:'';
+}
 function dailyEVTop(pg,st){
   const rows=[];
   for(const it of pg.items){ const ref=it.ref, id=ref.id;
@@ -1307,10 +1457,11 @@ function renderDaily(idx){
   </div>`;
   let items=pg.items;
   if(FOLLOWONLY) items=items.filter(it=>refTeams(it.ref,st).some(n=>FOLLOW.has(n)));
+  const tasks=dailyTasks(pg,idx,st);
   const evtop=dailyEVTop(pg,st);
   const body = items.length ? items.map(it=>matchCard(it.ref, st)).join("")
     : `<div class="note">本日無關注球隊場次（共 ${pg.items.length} 場）。撳「全部」睇返晒，或喺隊名側邊 ☆ 加關注。</div>`;
-  wrap.innerHTML=rbar+bar+hd+evtop+body;
+  wrap.innerHTML=`<div class="navstick">${rbar}${bar}</div>`+hd+tasks+evtop+body;
   const onb=wrap.querySelector('.stbtn.on'); if(onb){try{onb.scrollIntoView({inline:'center',block:'nearest'});}catch(e){}}
 }
 function matchCard(ref, st){
@@ -1343,7 +1494,11 @@ function matchCard(ref, st){
   ANALCTX[id]={ref,A,B,st};
   BOARDCTX[id]={J:bd.J, A, B, bdM:bd, an, gs, anch:anchorFor(id)};
   return `<div class="mc${(fA||fB)?' foll':''}">
-    <div class="mctag">${tagTxt}${sttHTML}${pact?`<span class="stt pact">⚠ 雙和齊出線</span>`:''}</div>
+    ${(()=>{ const x=FIX[id]; let extra='';
+      if(!known&&x){ const dt=matchInstant(x)-Date.now(); if(dt>0&&dt<48*3600e3) extra+=`<span class="stt cd">⏱ ${fmtCD(dt)}</span>`; }
+      if(!locked){ if(ODDS[id+'_h']&&ODDS[id+'_d']&&ODDS[id+'_a']) extra+='<span class="stt priced">💰 已錨定</span>';
+        else if(['h','d','a','o','u','bt','coub','cahb'].some(k=>ODDS[id+'_'+k])) extra+='<span class="stt priced2">💰 已貼價</span>'; }
+      return `<div class="mctag">${tagTxt}${sttHTML}${extra}${pact?`<span class="stt pact">⚠ 雙和齊出線</span>`:''}</div>`; })()}
     <div class="mteams" style="margin:6px 0 2px">
       <div class="tm"><div class="nmln">${star(A.n)}${fl(A)}${A.n}</div><div class="rt">實力 ${Math.round(A.r)}</div></div>
       <div class="vs">VS</div>
@@ -1361,6 +1516,7 @@ function matchCard(ref, st){
     ${locked?`
     <div class="mc-mid">
       <span class="done-badge lk">🔒 ${scoreStr}</span>
+      <button class="mini sim" onclick="toggleSettle('${id}')">📊 結算▾</button>
       <button class="mini danger-arm" data-armed="" onclick="armUnlock(this,'${id}')">✏ 修改</button>
       <button class="mini" onclick="toggleAnal('${id}')">分析▾</button>
       <button class="mini" onclick="toggleBoard('${id}')">盤口參考▾</button>
@@ -1376,6 +1532,7 @@ function matchCard(ref, st){
       ${pact?`<button class="mini ${BOOST[id]?'sim':''}" onclick="toggleBoost('${id}')">和局誘因${BOOST[id]?'✓':''}</button>`:''}
       ${simmed?`<span class="done-badge sm">🔓 ${scoreStr}</span>`:''}
     </div>`}
+    <div class="mc-board hide" id="se_${id}"></div>
     <div class="mc-board hide" id="an_${id}"></div>
     <div class="mc-board hide" id="bd_${id}">${boardHTML(id,A,B,bd)}</div>
   </div>`;
@@ -1571,7 +1728,7 @@ function scheduleBackgroundMC(){
 async function runBackgroundMC(){
   const BG_N=Math.min(Math.max(5000, MC_CACHE.N||0), 10000);   // 唔降級高精度結果
   applyStyle();
-  const key=JSON.stringify(KNOWN)+'|'+VOL+'|'+SIGMA+'|'+LEARN+'|'+BG_N;
+  const key=JSON.stringify(KNOWN)+'|'+VOL+'|'+SIGMA+'|'+LEARN+'|'+BG_N+'|'+ovrKey();
   if(key===MC_CACHE.key && MC_CACHE.rows) return;  // 賽果冇變，唔重跑
   const stat=$("#status"); if(stat) stat.textContent="⟳ 後台更新條件化機率（"+BG_N.toLocaleString()+" 次，"+knownCount()+" 場已知固定）…";
   try{
@@ -1593,7 +1750,7 @@ function toast(msg){ const s=$("#status"); if(s) s.textContent=msg; }
 
 /* 匯出 / 匯入 / 清除 */
 function exportData(){
-  const data=JSON.stringify({ver:2,known:KNOWN,odds:ODDS,ohist:OHIST,boost:BOOST,bank:BANK,follow:[...FOLLOW],champhist:CHIST,exported:new Date().toISOString()});
+  const data=JSON.stringify({ver:2,known:KNOWN,odds:ODDS,ohist:OHIST,boost:BOOST,bank:BANK,ovr:OVR,follow:[...FOLLOW],champhist:CHIST,exported:new Date().toISOString()});
   try{ const a=document.createElement('a'); a.href='data:application/json;charset=utf-8,'+encodeURIComponent(data);
     a.download='wc2026-data.json'; document.body.appendChild(a); a.click(); a.remove();
     toast('已匯出完整備份（賽果 '+knownCount()+' 場 · 賠率 '+Object.keys(ODDS).length+' 個 · 關注 '+FOLLOW.size+' 隊 · 走勢 '+CHIST.length+' 快照）'); }
@@ -1607,6 +1764,9 @@ function importData(file){
     if(d.ohist&&typeof d.ohist==='object'){ OHIST=d.ohist; saveOH(); }
     if(d.boost&&typeof d.boost==='object'){ BOOST=d.boost; try{localStorage.setItem('wc26boost',JSON.stringify(BOOST));}catch(e){} }
     if(isFinite(d.bank)&&d.bank>0){ BANK=d.bank; try{localStorage.setItem('wc26bank',String(BANK));}catch(e){} }
+    if(d.ovr&&typeof d.ovr==='object'){ OVR=d.ovr; saveOvr();
+      for(const g of GL) GROUPS[g].forEach(x=>{ x[2]=isFinite(OVR[x[0]])?OVR[x[0]]:RDEFAULT[x[0]]; });
+      TEAMS_FLAT=buildTeams(); }
     if(Array.isArray(d.follow)){ FOLLOW=new Set(d.follow); saveFollow(); }
     if(Array.isArray(d.champhist)){ CHIST=d.champhist; saveChampHist(); renderChampTrend(); }
     curPage=null; renderDaily(); toast('已匯入備份'+(d.ver===2?'（完整 v2）':'（舊版：只含賽果）')); }
@@ -1616,6 +1776,7 @@ function importData(file){
 function doClear(){
   KNOWN={g:{},k:{}}; saveKnown(); curPage=null;
   MC_CACHE={key:null,rows:null,N:0}; TEMP=1; prevChampMap=null; lastRows=null;
+  for(const g of GL) GROUPS[g].forEach(x=>{ x[2]=RDEFAULT[x[0]]; }); OVR={}; saveOvr(); TEAMS_FLAT=buildTeams();
   ODDS={}; saveOdds(); OHIST={}; saveOH(); BOOST={}; try{localStorage.setItem('wc26boost','{}');}catch(e){} CHIST=[]; saveChampHist();
   const ct=$("#champTrend"); if(ct)ct.innerHTML="";
   const cs=$("#champSummary"); if(cs){cs.classList.add("hide");cs.innerHTML="";}
@@ -1637,21 +1798,35 @@ function manualStart(){ renderDaily(); }
 
 /* ratings editor */
 function renderRatings(){
-  let html=`<div class="sec-h">實力值編輯（即時生效）</div>
-    <div class="note" style="margin:0 0 12px">注：主場加成（美/墨 +45、加 +35）同 per-sim 不確定性 σ 喺模擬時自動加，呢度只係基礎 rating。</div><div class="groups">`;
+  let html=`<div class="sec-h">實力值編輯（即時生效 · 自動記住 · 傷停/陣容 nudge 通道）
+    <button class="mini" style="margin-left:10px" onclick="resetOvr()">還原全部預設</button></div>
+    <div class="note" style="margin:0 0 12px">主場加成（美/墨 +45、加 +35）、σ、攻防學習、歷史先驗喺模擬時自動疊加，呢度只係基礎 rating。改動會自動觸發後台 MC 重算。</div><div class="groups">`;
   for(const g of GL){
     html+=`<div class="gcard"><h3>${g} 組</h3>`;
     GROUPS[g].forEach((x,i)=>{
-      html+=`<div class="grow" style="grid-template-columns:1fr 76px"><span class="nm">${x[1]} ${x[0]}</span>
+      const d=x[2]-RDEFAULT[x[0]];
+      html+=`<div class="grow" style="grid-template-columns:1fr 76px"><span class="nm">${x[1]} ${x[0]}${d?` <small class="${d>0?'pos':'neg'}" style="font-family:var(--cond)">${d>0?'+':''}${d}</small>`:''}</span>
         <input type="number" data-g="${g}" data-i="${i}" value="${x[2]}"
-        style="background:var(--bg2);border:1px solid var(--line2);color:var(--txt);border-radius:7px;padding:5px 8px;width:100%;font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;font-weight:700"></div>`;
+        style="background:var(--bg2);border:1px solid ${d?'var(--gold)':'var(--line2)'};color:var(--txt);border-radius:7px;padding:5px 8px;width:100%;font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;font-weight:700"></div>`;
     });
     html+=`</div>`;
   }
   $("#ratings").innerHTML=html+`</div>`;
   $("#ratings").querySelectorAll("input").forEach(inp=>inp.onchange=()=>{
-    GROUPS[inp.dataset.g][+inp.dataset.i][2]=+inp.value; TEAMS_FLAT=buildTeams();
+    const g=inp.dataset.g, i=+inp.dataset.i, n=GROUPS[g][i][0], v=+inp.value;
+    if(!isFinite(v)||v<800||v>2600){ toast('實力值要喺 800–2600 之間'); inp.value=GROUPS[g][i][2]; return; }
+    GROUPS[g][i][2]=v; TEAMS_FLAT=buildTeams();
+    if(v===RDEFAULT[n]) delete OVR[n]; else OVR[n]=v;
+    saveOvr(); renderRatings();
+    renderDaily(curPage);                       // 卡片即時反映
+    scheduleBackgroundMC();                      // 機率自動重算
+    toast(n+' 實力改為 '+v+(v!==RDEFAULT[n]?'（預設 '+RDEFAULT[n]+'，已記住）':'（還原預設）'));
   });
+}
+function resetOvr(){
+  for(const n in OVR){ for(const g of GL){ const t=GROUPS[g].find(x=>x[0]===n); if(t) t[2]=RDEFAULT[n]; } }
+  OVR={}; saveOvr(); TEAMS_FLAT=buildTeams(); renderRatings(); renderDaily(curPage); scheduleBackgroundMC();
+  toast('已還原全部實力預設值。');
 }
 
 /* events */
@@ -1665,6 +1840,10 @@ document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
 function applyStyle(){const [v,s]=$("#vol").value.split("|"); VOL=+v; SIGMA=+s;}
 armClear($("#clearKnown"));
 $("#clearSim").onclick=clearSimResults;
+(function(){ const tb=$("#toolsBox"); if(!tb)return;
+  try{ if(localStorage.getItem('wc26tools')==='1') tb.open=true; }catch(e){}
+  tb.addEventListener('toggle',()=>{ try{localStorage.setItem('wc26tools',tb.open?'1':'0');}catch(e){} });
+})();
 $("#exportBtn").onclick=exportData;
 $("#importFile").onchange=(e)=>{ if(e.target.files&&e.target.files[0]) importData(e.target.files[0]); e.target.value=""; };
 $("#runOne").onclick=()=>{applyStyle();document.querySelector('.tab[data-v="one"]').click();renderOne();
@@ -1674,7 +1853,7 @@ let MC_CACHE={key:null,rows:null,N:0};
 $("#runMC").onclick=async()=>{
   applyStyle();
   const N=+$("#runs").value, btn=$("#runMC");
-  const key=JSON.stringify(KNOWN)+'|'+VOL+'|'+SIGMA+'|'+LEARN+'|'+N;
+  const key=JSON.stringify(KNOWN)+'|'+VOL+'|'+SIGMA+'|'+LEARN+'|'+N+'|'+ovrKey();
   const show=(rows)=>{ document.querySelector('.tab[data-v="prob"]').click();
     $("#probEmpty").classList.add("hide"); $("#probContent").classList.remove("hide"); renderProb(rows,N); };
   if(key===MC_CACHE.key && MC_CACHE.rows){ show(MC_CACHE.rows);
