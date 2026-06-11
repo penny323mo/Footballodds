@@ -1,0 +1,1878 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 世界盃 · Monte Carlo 模擬晉級表 v2</title>
+<style>
+:root{
+  --bg:#070b16; --bg2:#0d1426; --panel:#111b33; --panel2:#16213c;
+  --line:#243254; --line2:#314269;
+  --txt:#e9eefb; --mut:#8493b4; --mut2:#5e6d8e;
+  --green:#23e6a4; --green-d:#0f9d75;
+  --gold:#f4c542; --red:#ff5068; --blue:#4aa8ff;
+  --win:#23e6a4;
+  --cond:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;
+  --disp:'Arial Narrow','Helvetica Neue',Impact,system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--txt);font-family:system-ui,'Helvetica Neue',Arial,sans-serif,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body{
+  background:
+    radial-gradient(1200px 600px at 75% -10%, rgba(35,230,164,.10), transparent 60%),
+    radial-gradient(900px 500px at 10% 110%, rgba(74,168,255,.08), transparent 55%),
+    var(--bg);
+  min-height:100vh; padding:0 0 60px;
+}
+.wrap{max-width:1320px;margin:0 auto;padding:0 16px}
+header{padding:34px 16px 18px; border-bottom:1px solid var(--line); background:linear-gradient(180deg, rgba(13,20,38,.7), transparent);}
+header .wrap{display:flex;flex-direction:column;gap:6px}
+.kicker{font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;letter-spacing:.28em;text-transform:uppercase;color:var(--green);font-weight:700;font-size:13px}
+h1{font-family:'Arial Narrow','Helvetica Neue',Impact,system-ui,sans-serif;font-size:clamp(30px,6vw,56px);letter-spacing:.5px;line-height:.95;text-transform:uppercase}
+h1 span{color:var(--gold)}
+.v2{font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;font-size:13px;color:var(--bg);background:var(--green);padding:2px 9px;border-radius:6px;font-weight:700;letter-spacing:.08em;vertical-align:middle;margin-left:6px}
+.sub{color:var(--mut);font-size:14px;max-width:760px;margin-top:4px}
+.sub b{color:var(--txt)}
+
+.controls{margin-top:22px;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+.ctl{display:flex;flex-direction:column;gap:6px}
+.ctl label{font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;text-transform:uppercase;letter-spacing:.12em;font-size:12px;color:var(--mut)}
+select,button{font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;font-weight:700;letter-spacing:.06em;border-radius:10px;border:1px solid var(--line2);background:var(--panel2);color:var(--txt);padding:11px 16px;font-size:15px;cursor:pointer;transition:.15s}
+select{text-transform:uppercase}
+button:hover{border-color:var(--green);color:var(--green)}
+button.primary{background:linear-gradient(180deg,var(--green),var(--green-d));color:#04130d;border:none;text-transform:uppercase}
+button.primary:hover{color:#04130d;filter:brightness(1.08)}
+button.ghost{background:transparent}
+button.danger{border-color:var(--red)!important;color:var(--red)!important}
+.bar{height:6px;border-radius:6px;background:var(--panel2);overflow:hidden;margin-top:14px;border:1px solid var(--line)}
+.bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--blue));transition:width .12s}
+.status{font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;color:var(--mut);font-size:13px;letter-spacing:.08em;margin-top:8px;min-height:16px}
+
+.tabs{display:flex;gap:8px;margin:26px 0 18px;border-bottom:1px solid var(--line)}
+.tab{font-family:'Arial Narrow','Helvetica Neue',Impact,system-ui,sans-serif;font-size:18px;letter-spacing:.5px;text-transform:uppercase;color:var(--mut2);background:none;border:none;border-bottom:3px solid transparent;border-radius:0;padding:10px 4px;cursor:pointer}
+.tab:hover{color:var(--txt)}
+.tab.on{color:var(--txt);border-bottom-color:var(--green)}
+.view{display:none}
+.view.on{display:block;animation:fade .3s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.sec-h{font-family:'Arial Narrow','Helvetica Neue',Impact,system-ui,sans-serif;text-transform:uppercase;letter-spacing:.5px;font-size:22px;margin:26px 0 14px;display:flex;align-items:center;gap:12px}
+.sec-h:before{content:"";width:8px;height:22px;background:var(--green);border-radius:2px;display:inline-block}
+.groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.gcard{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.gcard h3{font-family:'Arial Narrow','Helvetica Neue',Impact,system-ui,sans-serif;font-size:16px;letter-spacing:.3px;padding:11px 14px;background:var(--bg2);border-bottom:1px solid var(--line);color:var(--gold)}
+.grow{display:grid;grid-template-columns:20px 1fr 26px 26px 26px 30px;gap:6px;align-items:center;padding:8px 14px;font-size:14px;border-bottom:1px solid rgba(36,50,84,.5)}
+.grow:last-child{border-bottom:none}
+.grow .pos{font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;font-weight:700;color:var(--mut2);text-align:center}
+.grow .nm{display:flex;align-items:center;gap:7px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.grow .nm .fl{font-size:16px}
+.grow .st{font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;text-align:center;color:var(--mut);font-size:13px}
+.grow .pt{font-family:'Arial Narrow','Helvetica Neue',Impact,system-ui,sans-serif;text-align:center;font-size:15px}
+.grow.q1{background:linear-gradient(90deg,rgba(35,230,164,.16),transparent)}.grow.q1 .pos{color:var(--green)}
+.grow.q2{background:linear-gradient(90deg,rgba(74,168,255,.13),transparent)}.grow.q2 .pos{color:var(--blue)}
+.grow.q3{background:linear-gradient(90deg,rgba(244,197,66,.13),transparent)}.grow.q3 .pos{color:var(--gold)}
+.grow.q3.out{background:none;opacity:.5}
+.legend{display:flex;flex-wrap:wrap;gap:16px;color:var(--mut);font-size:13px;margin:14px 0 4px;font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;letter-spacing:.05em}
+.dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.gmbtn{width:100%;margin-top:8px;border-radius:0 0 13px 13px;border:none;border-top:1px solid var(--line);background:var(--bg2);color:var(--green);font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;font-weight:700;font-size:13px;letter-spacing:.06em;padding:9px;cursor:pointer}
+.gmbtn:hover{background:var(--panel2);color:var(--green)}
+.gmlist{background:var(--bg2);padding:2px 12px 12px}
+.gmrow{display:grid;grid-template-columns:28px 1fr 48px 1fr 20px;gap:6px;align-items:center;padding:6px 0;border-top:1px solid rgba(36,50,84,.5);font-size:13px}
+.gmrow .md{font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;color:var(--mut2);font-size:11px;text-align:center}
+.gmrow .t{display:flex;align-items:center;gap:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gmrow .t.r{justify-content:flex-end}
+.gmrow .sc{text-align:center;font-family:'Arial Narrow','Helvetica Neue',Impact,system-ui,sans-serif;color:var(--txt);font-size:14px}
+.gmrow .sc b{color:var(--gold)}
+.gmrow .kn{font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;font-size:10px;color:var(--blue);text-align:center}
+
+.t3{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:14px}
+.t3 th{font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;text-transform:uppercase;letter-spacing:.1em;font-size:12px;color:var(--mut);background:var(--bg2);padding:10px;text-align:left}
+.t3 td{padding:9px 10px;border-top:1px solid rgba(36,50,84,.5)}
+.t3 tr.adv{background:linear-gradient(90deg,rgba(244,197,66,.12),transparent)}
+.t3 tr.adv td:first-child{color:var(--gold);font-weight:700}
+
+.bracket-scroll{overflow-x:auto;padding-bottom:18px;-webkit-overflow-scrolling:touch}
+.bracket{display:flex;gap:26px;min-width:1180px;padding-top:6px}
+.col{display:flex;flex-direction:column;justify-content:space-around;gap:10px;flex:1}
+.col h4{font-family:'Arial Narrow','Helvetica Neue',Impact,system-ui,sans-serif;text-transform:uppercase;font-size:13px;letter-spacing:.16em;color:var(--mut2);text-align:center;margin-bottom:4px}
+.tie{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:13px}
+.tie .sd{display:grid;grid-template-columns:1fr 24px;align-items:center;padding:7px 10px;gap:6px}
+.tie .sd:first-child{border-bottom:1px solid rgba(36,50,84,.6)}
+.tie .sd .nm{display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tie .sd .fl{font-size:14px}
+.tie .sd .sc{font-family:'Arial Narrow','Helvetica Neue',Impact,system-ui,sans-serif;text-align:center;font-size:14px;color:var(--mut)}
+.tie .sd.w{background:linear-gradient(90deg,rgba(35,230,164,.14),transparent)}
+.tie .sd.w .nm{color:var(--win);font-weight:700}.tie .sd.w .sc{color:var(--win)}
+.tie .pen{font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;font-size:10px;color:var(--gold);padding:2px 10px 5px;letter-spacing:.06em}
+.mlabel{font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;font-size:10px;color:var(--mut2);padding:3px 10px 0;letter-spacing:.1em}
+.champ{background:linear-gradient(180deg,rgba(244,197,66,.18),var(--panel));border:1px solid var(--gold);border-radius:14px;padding:16px;text-align:center;align-self:center}
+.champ .t{font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;text-transform:uppercase;letter-spacing:.2em;color:var(--gold);font-size:12px}
+.champ .n{font-family:'Arial Narrow','Helvetica Neue',Impact,system-ui,sans-serif;font-size:26px;margin-top:6px;display:flex;gap:10px;align-items:center;justify-content:center}
+.champ .n .fl{font-size:30px}
+
+.metrics{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:14px}
+.metric{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 16px;min-width:150px}
+.metric .k{font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;text-transform:uppercase;letter-spacing:.1em;font-size:11px;color:var(--mut)}
+.metric .v{font-family:'Arial Narrow','Helvetica Neue',Impact,system-ui,sans-serif;font-size:22px;margin-top:3px}
+.metric .v small{font-family:system-ui,'Helvetica Neue',Arial,sans-serif;font-size:12px;color:var(--mut);font-weight:400}
+
+.ptbl{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:14px}
+.ptbl th{font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;text-transform:uppercase;letter-spacing:.08em;font-size:11px;color:var(--mut);background:var(--bg2);padding:11px 8px;text-align:center;cursor:pointer;white-space:nowrap}
+.ptbl th.l{text-align:left}.ptbl th:hover{color:var(--green)}
+.ptbl td{padding:8px;border-top:1px solid rgba(36,50,84,.5);text-align:center;font-variant-numeric:tabular-nums}
+.ptbl td.l{text-align:left}
+.ptbl .nm{display:flex;align-items:center;gap:8px;font-weight:600}
+.ptbl .nm .fl{font-size:16px}
+.ptbl .gtag{font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;color:var(--mut2);font-size:12px;border:1px solid var(--line2);border-radius:5px;padding:1px 6px;margin-left:auto}
+.pcell{position:relative}.pcell .v{position:relative;z-index:1;font-weight:600}
+.pcell .fillb{position:absolute;left:0;top:0;bottom:0;opacity:.22}
+.win-c .fillb{background:var(--gold)}.win-c .v{color:var(--gold)}
+.mkt{color:var(--blue);font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;font-weight:600}
+.rank{font-family:'Arial Narrow','Helvetica Neue',Impact,system-ui,sans-serif;color:var(--mut2);font-size:13px}
+.note{color:var(--mut);font-size:13px;line-height:1.6;margin-top:14px}
+.note code{background:var(--bg2);padding:1px 6px;border-radius:5px;color:var(--green);font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;font-size:13px}
+footer{color:var(--mut2);font-size:12px;text-align:center;margin-top:40px;line-height:1.7;font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;letter-spacing:.04em}
+/* 賽程聚焦 */
+.stagebar{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-top:10px;-webkit-overflow-scrolling:touch}
+.stbtn{flex:0 0 auto;font-family:var(--cond);font-weight:600;font-size:13px;padding:8px 12px;border-radius:9px;border:1px solid var(--line2);background:var(--panel2);color:var(--mut);white-space:nowrap;cursor:pointer}
+.stbtn.on{border-color:var(--green);color:var(--green)}
+.stbtn.done{color:var(--mut2)}
+.stagehd{display:flex;justify-content:space-between;align-items:baseline;margin:8px 0 10px}
+.stagettl{font-family:var(--disp);font-size:21px;text-transform:uppercase;letter-spacing:.5px}
+.stagedt{font-family:var(--cond);color:var(--gold);font-size:14px;font-weight:600}
+.gsec-h{font-family:var(--disp);color:var(--gold);font-size:14px;letter-spacing:.3px;margin:14px 0 5px}
+.mc{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.mc.pend{opacity:.65}
+.mc.pend .pendrow{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.mc.pend .pendtxt{font-family:var(--cond);color:var(--mut2);font-size:12px;text-align:right}
+.mc.pend .ttl{font-family:var(--cond);color:var(--mut)}
+.mtime{font-family:var(--cond);color:var(--gold);font-size:12.5px;text-align:center;margin:2px 0 8px;letter-spacing:.2px}
+.mc-top{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;font-weight:600;font-size:14px}
+.mc-top .mc-t{display:flex;gap:6px;align-items:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mc-top .mc-t.r{justify-content:flex-end}
+.mc-top .mc-od{font-family:var(--cond);color:var(--green);font-size:12px;text-align:center;white-space:nowrap}
+.mc-mid{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:9px}
+.mc-in{width:46px;text-align:center;font-family:var(--disp);font-size:18px;background:var(--bg2);border:1px solid var(--line2);color:var(--txt);border-radius:8px;padding:5px}
+.mini{font-family:var(--cond);font-size:12px;font-weight:700;padding:7px 10px;border-radius:8px;border:1px solid var(--line2);background:var(--panel2);color:var(--txt);cursor:pointer}
+.mini.primary{background:linear-gradient(180deg,var(--green),var(--green-d));color:#04130d;border:none}
+.mini.sim{border-color:var(--gold);color:var(--gold)}
+.mini[disabled]{opacity:.35;pointer-events:none}
+.mctag{font-family:var(--cond);font-size:11px;font-weight:700;color:var(--mut2);letter-spacing:.4px;text-transform:uppercase;margin-bottom:2px}
+.roundbar{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-top:8px}
+.rbtn{flex:0 0 auto;font-family:var(--cond);font-weight:700;font-size:12px;padding:6px 11px;border-radius:999px;border:1px solid var(--line2);background:var(--bg2);color:var(--mut);white-space:nowrap;cursor:pointer}
+.rbtn.on{background:var(--gold);border-color:var(--gold);color:#120c00}
+.star{cursor:pointer;color:var(--mut2);font-size:.9em;user-select:none}
+.star.on{color:var(--gold)}
+.mc.foll{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}
+.stt{font-family:var(--cond);font-size:10px;font-weight:700;padding:1px 6px;border-radius:6px;margin-left:6px;text-transform:none}
+.stt.live{background:var(--red);color:#fff}
+.stt.done{background:var(--bg2);color:var(--gold);border:1px solid var(--line2)}
+.sttbl{margin-bottom:14px}
+.qok{color:var(--green);font-weight:700;font-family:var(--cond)}
+.q3{color:var(--gold);font-weight:700;font-family:var(--cond)}
+.qno{color:var(--mut2);font-family:var(--cond)}
+.cutline td{border-bottom:2px solid var(--gold)}
+.shrinkrow{font-family:var(--cond);color:var(--mut);font-size:13px;margin:6px 0 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.shrinkrow select{background:var(--bg2);border:1px solid var(--line2);color:var(--txt);border-radius:7px;padding:5px 8px;font-family:var(--cond)}
+.mut{color:var(--mut2)}
+.anprob-row{font-family:var(--cond);font-size:12px;margin:4px 0 10px;display:flex;flex-wrap:wrap;gap:8px}
+.champ-sum{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:10px 0 6px}
+.cup-hd{font-family:var(--cond);font-size:12px;color:var(--mut2);display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.cup-sub{color:var(--mut2);font-size:11px}
+.cup-row{display:flex;gap:10px;flex-wrap:wrap}
+.cup-cell{display:flex;flex-direction:column;align-items:center;min-width:52px}
+.cup-fl{font-size:18px;line-height:1.2}
+.cup-n{font-family:var(--cond);font-size:11px;color:var(--mut);white-space:nowrap}
+.cup-p{font-family:var(--disp);font-size:16px;font-weight:700;color:var(--txt)}
+.cup-up{color:var(--green);font-family:var(--cond);font-size:10px}
+.cup-dn{color:var(--red);font-family:var(--cond);font-size:10px}
+.evtop{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--gold);border-radius:12px;padding:10px 12px;margin:0 0 10px}
+.evt-row{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px}
+.evt-rank{font-family:var(--disp);color:var(--gold);font-size:15px;width:16px}
+.evt-m{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.evt-m small{color:var(--mut2)}
+.evt-o{font-family:var(--cond);color:var(--mut);font-size:11px;white-space:nowrap}
+.evt-ev{font-family:var(--cond);font-weight:700;white-space:nowrap}
+.evt-ev small{color:var(--mut2);font-weight:400}
+.dv-up{color:var(--green);font-family:var(--cond);font-size:11px;margin-left:4px}
+.dv-dn{color:var(--red);font-family:var(--cond);font-size:11px;margin-left:4px}
+.rel-row{display:flex;align-items:center;gap:8px;margin:5px 0}
+.rel-lbl{font-family:var(--cond);font-size:12px;color:var(--mut);width:90px;flex:none}
+.rel-bars{flex:1;display:flex;flex-direction:column;gap:2px}
+.rel-bar{font-family:var(--cond);font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;white-space:nowrap;min-width:fit-content}
+.rel-bar.pred{background:var(--bg2);border:1px solid var(--line2);color:var(--mut)}
+.rel-bar.act{background:linear-gradient(90deg,var(--green),var(--green-d));color:#04130d}
+.an-panel{padding:4px 0}
+.an-team{margin:6px 0}
+.fchip{font-family:var(--cond);font-size:11px;font-weight:700;padding:1px 7px;border-radius:6px;margin-right:4px}
+.fchip.fW{background:var(--green);color:#04130d}
+.fchip.fD{background:var(--bg2);border:1px solid var(--line2);color:var(--mut)}
+.fchip.fL{background:var(--red);color:#fff}
+.crow{display:grid;grid-template-columns:auto 64px 52px 48px 64px 1fr;gap:6px;align-items:center;margin-top:6px}
+.crow .bk{font-family:var(--cond);font-size:12px;color:var(--mut)}
+.bsel2{padding:4px;text-align:center}
+.src-badge{font-family:var(--cond);font-size:11px;padding:5px 8px;border-radius:7px;margin-bottom:7px}
+.src-badge.anch{background:rgba(35,230,164,.08);border:1px solid var(--green);color:var(--green)}
+.src-badge.mdl{background:var(--bg2);border:1px solid var(--line2);color:var(--mut2)}
+.tier{font-style:normal;font-family:var(--cond);font-size:10px;color:var(--mut2);border:1px solid var(--line2);border-radius:5px;padding:0 4px;margin-left:4px}
+.tier.ok{color:var(--green);border-color:var(--green)}
+.tier.warn{color:var(--gold);border-color:var(--gold)}
+.bev.mid{color:var(--gold)}
+.bev.mut2{color:var(--mut2)}
+.sem{color:var(--mut2);font-size:9.5px;font-weight:400;margin-left:2px}
+.ohm{font-family:var(--cond);font-size:10px;color:var(--gold);margin-left:5px}
+.stt.pact{background:var(--gold);color:#120c00}
+.bankrow{font-family:var(--cond);font-size:12px;color:var(--mut);margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}
+.bankrow input{width:70px}
+.toolsum{cursor:pointer;font-family:var(--cond);font-size:13px;color:var(--mut);padding:6px 0;user-select:none}
+#toolsBox[open] .toolsum{color:var(--gold)}
+.navstick{position:sticky;top:0;z-index:30;background:linear-gradient(180deg,var(--bg) 88%,rgba(11,16,32,0));padding:4px 0 2px}
+.taskbar{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 10px}
+.task{font-family:var(--cond);font-size:12px;padding:5px 10px;border-radius:8px;border:1px solid var(--line2);color:var(--mut);background:var(--panel2)}
+button.task{cursor:pointer}
+.task.warn{border-color:var(--red);color:var(--red)}
+.task.gold{border-color:var(--gold);color:var(--gold)}
+.stt.cd{background:var(--bg2);border:1px solid var(--line2);color:var(--mut2)}
+.stt.priced{background:rgba(35,230,164,.12);border:1px solid var(--green);color:var(--green)}
+.stt.priced2{background:var(--bg2);border:1px solid var(--gold);color:var(--gold)}
+.stageacts{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:-4px 0 12px}
+.stageacts .hint{font-family:var(--cond);color:var(--mut2);font-size:11px}
+.done-badge{font-family:var(--cond);font-size:12px;color:var(--green);margin-left:auto}
+.done-badge.lk{color:var(--gold);margin-left:0}
+.done-badge.sm{color:var(--mut2);margin-left:auto}
+.danger-arm{border-color:var(--line2);color:var(--mut)}
+.danger-arm[data-armed="1"]{border-color:var(--red)!important;color:var(--red)!important}
+.mc-board{margin-top:10px}
+.board .brow{grid-template-columns:1fr 48px 70px minmax(56px,1fr)}
+.betstbl .bsel{font-family:var(--cond);color:var(--mut2);font-size:11px;margin-top:2px}
+.tin{width:58px;text-align:center;background:var(--bg2);border:1px solid var(--line2);color:var(--txt);border-radius:6px;padding:4px;font-family:var(--cond);font-weight:600}
+.betacts{display:flex;gap:3px;flex-wrap:wrap}
+td.pos,.pos{color:var(--green)} td.neg,.neg{color:var(--red)}
+.hide{display:none!important}
+/* manual mode */
+.mnav{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:14px 0 4px}
+.mnav .pg{font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;color:var(--mut);letter-spacing:.08em;font-size:14px}
+.mcard{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:16px;padding:18px;margin:8px 0 18px}
+.mstage{font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;text-transform:uppercase;letter-spacing:.16em;color:var(--green);font-size:13px;font-weight:700;text-align:center}
+.mteams{display:flex;align-items:flex-start;justify-content:center;gap:20px;margin:14px 0;font-family:'Arial Narrow','Helvetica Neue',Impact,system-ui,sans-serif;font-size:clamp(17px,4vw,25px)}
+.mteams .tm{display:flex;flex-direction:column;align-items:center;gap:3px;max-width:42%;text-align:center}
+.mteams .tm .nmln{display:flex;align-items:center;gap:8px}.mteams .tm .fl{font-size:1.3em}
+.mteams .vs{color:var(--mut2);font-size:.7em;align-self:center}
+.mteams .rt{font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;font-size:12px;color:var(--mut);font-weight:600}
+.wdl{display:flex;height:30px;border-radius:8px;overflow:hidden;margin:12px 0 4px;font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;font-weight:700;font-size:12px}
+.wdl span{display:flex;align-items:center;justify-content:center;color:#04130d;white-space:nowrap;overflow:hidden;min-width:0}
+.wdl .w{background:var(--green)}.wdl .d{background:var(--mut2);color:var(--txt)}.wdl .l{background:var(--blue)}
+.xg{display:flex;justify-content:center;gap:10px;align-items:baseline;color:var(--mut);font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;font-size:13px;margin:6px 0}
+.xg b{color:var(--txt);font-size:18px;font-family:'Arial Narrow','Helvetica Neue',Impact,system-ui,sans-serif}
+.scos{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:10px 0 2px}
+.sco{background:var(--bg2);border:1px solid var(--line2);border-radius:8px;padding:4px 10px;font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;font-size:13px;color:var(--mut)}
+.sco b{color:var(--gold);font-family:'Arial Narrow','Helvetica Neue',Impact,system-ui,sans-serif;font-size:15px;margin-right:4px}
+.minput{display:flex;align-items:center;justify-content:center;gap:12px;margin:16px 0 6px;font-family:'Arial Narrow','Helvetica Neue',Impact,system-ui,sans-serif;font-size:22px;color:var(--mut)}
+.minput input{width:62px;text-align:center;font-family:'Arial Narrow','Helvetica Neue',Impact,system-ui,sans-serif;font-size:26px;background:var(--bg2);border:1px solid var(--line2);color:var(--txt);border-radius:10px;padding:6px}
+.mbtns{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:6px}
+.penpick{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:10px;color:var(--mut);font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif}
+.penpick button{border-color:var(--gold)}
+.bhd{font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;font-size:12px;color:var(--mut);letter-spacing:.04em;text-align:center;margin:10px 0 6px}
+.board{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:6px}
+.brow{display:grid;grid-template-columns:1fr 52px 64px 1fr;gap:8px;align-items:center;padding:5px 2px;border-top:1px solid rgba(36,50,84,.5);font-size:13px}
+.brow:first-of-type{border-top:none}
+.brow.bhdr{color:var(--mut2);font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;font-size:11px;letter-spacing:.08em;text-transform:uppercase;border-top:none}
+.brow.bhdr span{text-align:center}.brow.bhdr span:first-child{text-align:left}
+.brow .bk{color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brow .bf{font-family:'Arial Narrow','Helvetica Neue',Impact,system-ui,sans-serif;color:var(--green);text-align:center;font-size:15px}
+.brow .bo{width:100%;background:var(--panel2);border:1px solid var(--line2);color:var(--txt);border-radius:7px;padding:5px 6px;text-align:center;font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;font-weight:700}
+.brow .bev{font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;font-weight:700;font-size:12px;text-align:right;color:var(--mut2)}
+.brow .bev.pos{color:var(--green)}.brow .bev.neg{color:var(--red)}
+.bsub{font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;font-size:12px;color:var(--mut);margin-top:8px;padding-top:8px;border-top:1px solid rgba(36,50,84,.5);text-align:center}
+@media(max-width:640px){.controls{gap:8px}select,button{padding:9px 12px;font-size:14px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="kicker">FIFA World Cup 2026 · USA · CAN · MEX</div>
+    <h1>世界盃 <span>晉級表</span> 模擬器<span class="v2">v7</span></h1>
+    <div class="sub">48 隊 · Round of 32 新制 · <b>Dixon-Coles</b> · 攻防分離＋20年先驗 · <b>市場錨定定價</b>（貼齊 1X2 即除水反解衍生盤）· EV 區間 · 雙和偵測 · 已對 8,081 場 out-of-sample 回測。</div>
+    <details id="toolsBox"><summary class="toolsum">⚙ 工具（Monte Carlo · 實力 · 清除 · 備份）</summary>
+    <div class="controls">
+      <div class="ctl"><label>Monte Carlo 次數</label>
+        <select id="runs"><option>1000</option><option selected>5000</option><option>10000</option><option>20000</option></select></div>
+      <div class="ctl"><label>模型風格</label>
+        <select id="vol">
+          <option value="0.26|42">偏實力（少冷門）</option>
+          <option value="0.30|58" selected>標準</option>
+          <option value="0.36|75">多冷門</option>
+        </select></div>
+      <button class="primary" id="runMC">▶ 跑 Monte Carlo</button>
+      <button class="ghost" id="runOne">🎲 單次完整賽果</button>
+      <button class="ghost" id="toggleR">⚙ 改實力值</button>
+      <button class="ghost" id="clearSim">🗑 清模擬</button>
+      <button class="ghost" id="clearKnown">🗑 清全部</button>
+      <button class="ghost" id="exportBtn">⬇ 匯出</button>
+      <label class="ghost" id="importBtn" style="display:inline-flex;align-items:center;cursor:pointer">⬆ 匯入<input type="file" id="importFile" accept="application/json,.json" style="display:none"></label>
+    </div>
+    </details>
+    <div class="bar"><i id="prog"></i></div>
+    <div class="status" id="status">v7 已載入。日常用「賽程聚焦」：每場有預測參考，撳「盤口參考▾」貼 1X2 三價升級市場錨定。入賽果後機率自動後台更新。</div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div id="ratings" class="hide" style="margin-top:22px"></div>
+
+  <div class="tabs">
+    <button class="tab on" data-v="manual">賽程聚焦</button>
+    <button class="tab" data-v="prob">機率榜</button>
+    <button class="tab" data-v="stand">出線形勢</button>
+    <button class="tab" data-v="one">晉級表</button>
+  </div>
+
+  <div class="view" id="v-one">
+    <div id="oneEmpty" class="note">撳上面 <b>🎲 單次完整賽果</b> 產生一次由 Day 1 到決賽嘅完整模擬（含 per-sim 實力擾動）。</div>
+    <div id="oneContent" class="hide">
+      <div class="sec-h">小組賽最終排名</div>
+      <div class="legend">
+        <span><i class="dot" style="background:var(--green)"></i>小組首名</span>
+        <span><i class="dot" style="background:var(--blue)"></i>小組次名</span>
+        <span><i class="dot" style="background:var(--gold)"></i>第三名（爭 8 席）</span>
+      </div>
+      <div class="groups" id="oneGroups"></div>
+      <div class="sec-h">第三名排名（取最好 8 隊）</div>
+      <div id="one3"></div>
+      <div class="sec-h">淘汰賽晉級表</div>
+      <div class="bracket-scroll"><div class="bracket" id="oneBracket"></div></div>
+    </div>
+  </div>
+
+  <div class="view" id="v-prob">
+    <div id="probEmpty" class="note">入完賽果後會<b>自動後台更新</b>條件化機率（5,000 次，Worker 跑唔阻 UI）。撳 <b>▶ 跑 Monte Carlo</b> 可跑高精度版（10,000–20,000 次）。</div>
+    <div id="probContent" class="hide">
+      <div id="dvLine" class="note" style="margin:6px 0 8px"></div>
+      <div class="note" style="margin:2px 0">奪冠欄 ± 為抽樣讀數誤差（1σ，加大次數按 √N 收窄：5k≈±0.5pp、20k≈±0.25pp）。盤口板所有定價為解析閉式，不受 MC 次數影響。</div>
+      <details class="note" style="margin:4px 0 8px"><summary style="cursor:pointer">📋 模型驗證紀錄（2026-06-08 全面校準）</summary>
+        Walk-forward 回測：19,646 場國際賽（2006–2026），out-of-sample 測試期 2018–2026 共 8,081 場，先驗只用 2006–2017 擬合（零洩漏）。
+        結果：W/D/L RPS 0.173（基準 0.222，−22%）；斜率 F=0.34 位處最優平原（0.34–0.38）；攻防在線學習顯著（t=−4.3，OU-Brier −3.2%）；
+        20年節奏先驗喺冷啟動（每隊頭5場，即世界盃情境）顯著改善 RPS（t=−2.8）；機率校準桶 45–100% 區間預測 vs 命中誤差 &lt;1.2pp。
+        base λ=1.35 對應世盃總入球 ~2.7（2018 實際 2.64、2022 實際 2.69）。資料：martj42/international_results。
+      </details>
+      <div id="champTrend" style="margin:8px 0 12px"></div>
+      <div class="sec-h" id="probTitle">各階段晉級機率</div>
+      <div class="shrinkrow">同市場幾何池化 (log-linear)：
+        <select id="shrink" onchange="SHRINK=parseFloat(this.value); if(lastRows)renderProb(lastRows,lastN);">
+          <option value="0">關（純模型）</option>
+          <option value="0.25">25%</option>
+          <option value="0.5">50%</option>
+          <option value="0.75">75%</option>
+        </select>
+        <span class="hint">幾何池化 p∝model^(1-w)·market^w 歸一，比線性更 calibrated。</span>
+      </div>
+      <div class="shrinkrow">Temperature τ (奪冠%)：<button class="mini" onclick="autoCalibT()">⚡ 自動校準 τ</button><button class="mini" onclick="TEMP=1; if(lastRows)renderProb(lastRows,lastN);">重設 τ=1</button><span class="hint">黃金分割最小化對市場 Brier（需先跑 MC）。</span>
+      </div>
+      <div class="metrics" id="metrics"></div>
+      <div style="overflow-x:auto"><table class="ptbl" id="probTbl"></table></div>
+      <div class="note">「市場%」= FanDuel 2026-06-02 奪冠賠率 de-vig 後快照（overround≈1.45），僅 9 隊有公開賠率，作 benchmark。Brier 偏差 = 模型奪冠% 對市場% 嘅均方差（越細越貼）。撳欄目標題排序。</div>
+    </div>
+  </div>
+
+  <div class="view" id="v-stand"><div id="standWrap"></div></div>
+
+  <div class="view on" id="v-manual">
+    <div class="note" style="margin-top:4px">揀比賽日（自動定位到最早未賽嗰日），一日一頁。每場顯示 <b>W/D/L 機率 · 期望入球 · 最可能比數</b> 做參考；🎲 模擬 = 暫定🔓（可改可清）。手動入真實比數後撳「<b>確定 🔒</b>」永久鎖定真實賽果（不可覆蓋）；「儲存」= 暫定。🗑 清模擬 只清暫定賽果，確定賽果保留。<b>時間為澳門時間</b>，附場館城市。</div>
+    <div id="champSummary" class="champ-sum hide"></div>
+    <div id="manualWrap"></div>
+  </div>
+
+  <footer>
+    v7 模型：市場校準實力＋攻防分離（賽事內入球殘差學習）＋20年歷史節奏先驗（martj42 數據集，Poisson MLE）｜<b>Dixon-Coles</b>(ρ=−0.10) 抽比數｜per-sim <b>Normal(rating, σ)</b> 不確定性（σ 隨風格同已賽場數衰減）｜主場加成 美/墨 +45、加 +35｜KO 加時→十二碼｜τ 自動校準＋市場幾何池化｜回測：8,081 場 out-of-sample RPS 0.173（基準 0.222），校準桶誤差 <1.2pp。<br>
+    32 強第三名配對：官方 8 slot 可收組別名單做 most-constrained-first 解算（等價 Annex C，已驗證 495 組合全部可解）。<br>
+    賽程結構截至 2026-06-06 官方公佈。實力值與市場快照屬估算，僅供模擬。
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+   1. DATA — 12 組 48 隊（實力值已校準貼近市場，可改）
+   ============================================================ */
+const GROUPS = {
+  A:[["墨西哥","🇲🇽",1805],["南非","🇿🇦",1585],["南韓","🇰🇷",1755],["捷克","🇨🇿",1705]],
+  B:[["加拿大","🇨🇦",1760],["波斯尼亞","🇧🇦",1675],["卡塔爾","🇶🇦",1595],["瑞士","🇨🇭",1870]],
+  C:[["巴西","🇧🇷",2055],["摩洛哥","🇲🇦",1935],["海地","🇭🇹",1505],["蘇格蘭","🏴󠁧󠁢󠁳󠁣󠁴󠁿",1745]],
+  D:[["美國","🇺🇸",1820],["巴拉圭","🇵🇾",1685],["澳洲","🇦🇺",1725],["土耳其","🇹🇷",1820]],
+  E:[["德國","🇩🇪",2010],["庫拉索","🇨🇼",1485],["象牙海岸","🇨🇮",1780],["厄瓜多爾","🇪🇨",1850]],
+  F:[["荷蘭","🇳🇱",1985],["日本","🇯🇵",1865],["瑞典","🇸🇪",1765],["突尼西亞","🇹🇳",1665]],
+  G:[["比利時","🇧🇪",1965],["埃及","🇪🇬",1755],["伊朗","🇮🇷",1790],["紐西蘭","🇳🇿",1545]],
+  H:[["西班牙","🇪🇸",2110],["佛得角","🇨🇻",1545],["沙特","🇸🇦",1615],["烏拉圭","🇺🇾",1950]],
+  I:[["法國","🇫🇷",2105],["塞內加爾","🇸🇳",1895],["伊拉克","🇮🇶",1605],["挪威","🇳🇴",1945]],
+  J:[["阿根廷","🇦🇷",2045],["阿爾及利亞","🇩🇿",1770],["奧地利","🇦🇹",1840],["約旦","🇯🇴",1585]],
+  K:[["葡萄牙","🇵🇹",2040],["剛果DR","🇨🇩",1680],["烏茲別克","🇺🇿",1645],["哥倫比亞","🇨🇴",1945]],
+  L:[["英格蘭","🏴󠁧󠁢󠁥󠁮󠁧󠁿",2080],["克羅地亞","🇭🇷",1925],["加納","🇬🇭",1715],["巴拿馬","🇵🇦",1625]],
+};
+const GL = "ABCDEFGHIJKL".split("");
+// 市場 de-vig 快照（FanDuel 2026-06-02, overround≈1.45）
+const MARKET = {西班牙:12.0,法國:11.5,英格蘭:9.2,巴西:7.3,阿根廷:6.9,葡萄牙:6.3,德國:4.6,荷蘭:3.0,挪威:1.9};
+/* 過往20年國際賽先驗（martj42/international_results，2006–2026，Poisson MLE＋4年半衰期；x=節奏偏斜 log-λ，+開放/−低事件；sa/sd=原始攻/防 MLE 顯示用） */
+const HPRIOR={"墨西哥":{"x":0.056,"m":354,"w":55,"gf":1.64,"ga":0.95,"sa":1.16,"sd":-0.97},"南非":{"x":-0.016,"m":276,"w":43,"gf":1.26,"ga":0.79,"sa":0.7,"sd":-0.76},"南韓":{"x":0.071,"m":287,"w":52,"gf":1.6,"ga":0.93,"sa":1.07,"sd":-0.83},"捷克":{"x":0.107,"m":222,"w":47,"gf":1.61,"ga":1.1,"sa":1.16,"sd":-0.8},"加拿大":{"x":0.033,"m":199,"w":44,"gf":1.59,"ga":1.03,"sa":0.98,"sd":-0.87},"波斯尼亞":{"x":0.06,"m":195,"w":38,"gf":1.48,"ga":1.39,"sa":0.85,"sd":-0.65},"卡塔爾":{"x":0.126,"m":316,"w":43,"gf":1.47,"ga":1.16,"sa":0.77,"sd":-0.35},"瑞士":{"x":0.107,"m":228,"w":48,"gf":1.68,"ga":1.03,"sa":1.37,"sd":-1.01},"巴西":{"x":0.094,"m":270,"w":67,"gf":2.08,"ga":0.68,"sa":1.71,"sd":-1.4},"摩洛哥":{"x":-0.067,"m":232,"w":56,"gf":1.66,"ga":0.66,"sa":1.14,"sd":-1.36},"海地":{"x":0.138,"m":190,"w":41,"gf":1.62,"ga":1.25,"sa":0.69,"sd":-0.23},"蘇格蘭":{"x":0.082,"m":187,"w":45,"gf":1.37,"ga":1.25,"sa":1.09,"sd":-0.81},"美國":{"x":0.097,"m":322,"w":54,"gf":1.78,"ga":1.07,"sa":1.13,"sd":-0.8},"巴拉圭":{"x":-0.006,"m":227,"w":30,"gf":1.05,"ga":1.24,"sa":0.96,"sd":-0.99},"澳洲":{"x":0.041,"m":233,"w":52,"gf":1.72,"ga":0.94,"sa":1.07,"sd":-0.94},"土耳其":{"x":0.15,"m":234,"w":49,"gf":1.62,"ga":1.15,"sa":1.29,"sd":-0.79},"德國":{"x":0.15,"m":269,"w":62,"gf":2.36,"ga":1.03,"sa":1.65,"sd":-1.03},"庫拉索":{"x":0.086,"m":136,"w":33,"gf":1.6,"ga":1.42,"sa":0.38,"sd":-0.09},"象牙海岸":{"x":0.026,"m":248,"w":54,"gf":1.73,"ga":0.88,"sa":1.04,"sd":-0.95},"厄瓜多爾":{"x":-0.023,"m":229,"w":37,"gf":1.33,"ga":1.15,"sa":1.14,"sd":-1.22},"荷蘭":{"x":0.138,"m":250,"w":60,"gf":2.11,"ga":0.91,"sa":1.57,"sd":-1.12},"日本":{"x":0.076,"m":294,"w":59,"gf":2.04,"ga":0.89,"sa":1.29,"sd":-1.04},"瑞典":{"x":0.135,"m":256,"w":49,"gf":1.54,"ga":1.08,"sa":1.27,"sd":-0.82},"突尼西亞":{"x":-0.012,"m":258,"w":47,"gf":1.45,"ga":0.88,"sa":0.88,"sd":-0.92},"比利時":{"x":0.13,"m":228,"w":58,"gf":2.08,"ga":1.01,"sa":1.56,"sd":-1.13},"埃及":{"x":-0.015,"m":257,"w":58,"gf":1.68,"ga":0.81,"sa":0.93,"sd":-0.98},"伊朗":{"x":0.037,"m":257,"w":60,"gf":1.85,"ga":0.71,"sa":1.1,"sd":-0.98},"紐西蘭":{"x":-0.038,"m":140,"w":39,"gf":1.43,"ga":1.28,"sa":0.42,"sd":-0.55},"西班牙":{"x":0.102,"m":270,"w":71,"gf":2.28,"ga":0.73,"sa":1.73,"sd":-1.38},"佛得角":{"x":0.02,"m":151,"w":43,"gf":1.21,"ga":1.03,"sa":0.65,"sd":-0.58},"沙特":{"x":0.01,"m":308,"w":44,"gf":1.41,"ga":1.02,"sa":0.67,"sd":-0.64},"烏拉圭":{"x":-0.003,"m":242,"w":47,"gf":1.57,"ga":0.99,"sa":1.26,"sd":-1.27},"法國":{"x":0.087,"m":268,"w":61,"gf":1.84,"ga":0.81,"sa":1.57,"sd":-1.28},"塞內加爾":{"x":0.029,"m":225,"w":56,"gf":1.6,"ga":0.8,"sa":1.15,"sd":-1.05},"伊拉克":{"x":-0.018,"m":295,"w":41,"gf":1.19,"ga":0.99,"sa":0.61,"sd":-0.67},"挪威":{"x":0.119,"m":203,"w":46,"gf":1.58,"ga":1.12,"sa":1.34,"sd":-0.94},"阿根廷":{"x":0.005,"m":265,"w":63,"gf":1.93,"ga":0.79,"sa":1.58,"sd":-1.56},"阿爾及利亞":{"x":0.113,"m":228,"w":58,"gf":1.83,"ga":0.91,"sa":1.24,"sd":-0.87},"奧地利":{"x":0.076,"m":206,"w":45,"gf":1.56,"ga":1.2,"sa":1.24,"sd":-0.99},"約旦":{"x":0.095,"m":291,"w":40,"gf":1.38,"ga":1.05,"sa":0.78,"sd":-0.47},"葡萄牙":{"x":0.096,"m":257,"w":60,"gf":2.04,"ga":0.82,"sa":1.59,"sd":-1.27},"剛果DR":{"x":-0.026,"m":198,"w":38,"gf":1.31,"ga":1.05,"sa":0.73,"sd":-0.82},"烏茲別克":{"x":-0.001,"m":231,"w":47,"gf":1.52,"ga":0.97,"sa":0.79,"sd":-0.8},"哥倫比亞":{"x":0.062,"m":235,"w":49,"gf":1.43,"ga":0.87,"sa":1.48,"sd":-1.28},"英格蘭":{"x":0.017,"m":247,"w":62,"gf":2.05,"ga":0.72,"sa":1.5,"sd":-1.44},"克羅地亞":{"x":0.082,"m":241,"w":55,"gf":1.76,"ga":1.0,"sa":1.35,"sd":-1.07},"加納":{"x":0.049,"m":245,"w":45,"gf":1.42,"ga":1.0,"sa":0.82,"sd":-0.66},"巴拿馬":{"x":0.092,"m":278,"w":41,"gf":1.35,"ga":1.22,"sa":0.81,"sd":-0.5}};
+
+/* ============================================================
+   2. KNOCKOUT STRUCTURE — Match 73–104
+   ============================================================ */
+const T3SLOTS = [
+  {m:74, groups:["A","B","C","D","F"]},{m:77, groups:["C","D","F","G","H"]},
+  {m:79, groups:["C","E","F","H","I"]},{m:80, groups:["E","H","I","J","K"]},
+  {m:81, groups:["B","E","F","I","J"]},{m:82, groups:["A","E","H","I","J"]},
+  {m:85, groups:["E","F","G","I","J"]},{m:87, groups:["D","E","I","J","L"]},
+];
+const KO = {
+  73:{a:{p:"2A"},b:{p:"2B"}}, 74:{a:{p:"1E"},b:{slot:74}}, 75:{a:{p:"1F"},b:{p:"2C"}}, 76:{a:{p:"1C"},b:{p:"2F"}},
+  77:{a:{p:"1I"},b:{slot:77}}, 78:{a:{p:"2E"},b:{p:"2I"}}, 79:{a:{p:"1A"},b:{slot:79}}, 80:{a:{p:"1L"},b:{slot:80}},
+  81:{a:{p:"1D"},b:{slot:81}}, 82:{a:{p:"1G"},b:{slot:82}}, 83:{a:{p:"2K"},b:{p:"2L"}}, 84:{a:{p:"1H"},b:{p:"2J"}},
+  85:{a:{p:"1B"},b:{slot:85}}, 86:{a:{p:"1J"},b:{p:"2H"}}, 87:{a:{p:"1K"},b:{slot:87}}, 88:{a:{p:"2D"},b:{p:"2G"}},
+  89:{a:{w:74},b:{w:77}}, 90:{a:{w:73},b:{w:75}}, 91:{a:{w:76},b:{w:78}}, 92:{a:{w:79},b:{w:80}},
+  93:{a:{w:83},b:{w:84}}, 94:{a:{w:81},b:{w:82}}, 95:{a:{w:86},b:{w:88}}, 96:{a:{w:85},b:{w:87}},
+  97:{a:{w:89},b:{w:90}}, 98:{a:{w:93},b:{w:94}}, 99:{a:{w:91},b:{w:92}}, 100:{a:{w:95},b:{w:96}},
+  101:{a:{w:97},b:{w:98}}, 102:{a:{w:99},b:{w:100}}, 103:{a:{l:101},b:{l:102}}, 104:{a:{w:101},b:{w:102}},
+};
+const KORD=[73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104];
+const ROUND_DEF = [
+  {name:"32 強", ms:[73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88]},
+  {name:"16 強", ms:[89,90,91,92,93,94,95,96]},
+  {name:"8 強",  ms:[97,98,99,100]},
+  {name:"4 強",  ms:[101,102]},
+  {name:"決賽",  ms:[104]},
+];
+
+/* ============================================================
+   3. MODEL — v2
+   ============================================================ */
+let VOL=0.30, SIGMA=58;            // 由「模型風格」設定
+const RHO=-0.10, MAXG=7;
+const HOST={"美國":45,"墨西哥":45,"加拿大":35};
+
+/* ---- 真實賽果共用 store（跨日持久化）---- */
+let LEARN=true, K_LEARN=24;                 // form 學習開關 + K
+function loadKnown(){ try{const v=JSON.parse(localStorage.getItem("wc26known"));return v&&v.g?v:{g:{},k:{}};}catch(e){return {g:{},k:{}};} }
+function saveKnown(){ try{localStorage.setItem("wc26known",JSON.stringify(KNOWN));}catch(e){} scheduleBackgroundMC(); }
+let KNOWN=loadKnown();
+function knownCount(){ return Object.keys(KNOWN.g).length+Object.keys(KNOWN.k).length; }
+
+// 帶比分差嘅 Elo 更新（單步）
+function eloStep(ra,rb,ga,gb,K){
+  const exp=1/(1+Math.pow(10,(rb-ra)/400));
+  const res=ga>gb?1:ga<gb?0:0.5;
+  const mov=Math.log(Math.abs(ga-gb)+1)*(2.2/(Math.abs(ra-rb)*0.001+2.2));
+  const d=K*mov*(res-exp);
+  return [ra+d, rb-d];
+}
+// form 調整後 rating（base+host，再按已知賽果學習）。回傳完整 team 物件 map
+function formRatings(){
+  const base=buildTeams(), R={};
+  for(const n in base){ const x=(HPRIOR[n]&&HPRIOR[n].x)||0; R[n]={n:base[n].n,f:base[n].f,g:base[n].g, r:base[n].r+(HOST[n]||0), att:x, def:x}; }
+  if(!LEARN) return R;
+  const co=v=>Math.max(-0.30,Math.min(0.30,v)), LR=0.035;
+  const upd=(a,b,ga,gb)=>{
+    const [Ea,Eb]=lamPair(R[a],R[b]);            // 用賽前狀態計期望
+    const [ra,rb]=eloStep(R[a].r,R[b].r,ga,gb,K_LEARN); R[a].r=ra; R[b].r=rb;
+    const resA=ga-Ea, resB=gb-Eb;                // 入球殘差 → 攻防分離學習
+    R[a].att=co(R[a].att+LR*resA); R[b].def=co(R[b].def+LR*resA);
+    R[b].att=co(R[b].att+LR*resB); R[a].def=co(R[a].def+LR*resB);
+  };
+  for(let r=0;r<3;r++) for(const g of GL) for(const [i,j] of MD[r]){
+    const kn=KNOWN.g['g'+g+i+j]; if(!kn)continue;
+    upd(GROUPS[g][i][0], GROUPS[g][j][0], kn.ga, kn.gb);
+  }
+  for(const m of KORD){ const kn=KNOWN.k[m]; if(!kn||!kn.a)continue; upd(kn.a,kn.b,kn.ga,kn.gb); }
+  return R;
+}
+// 每隊已賽場數（供 σ-decay）
+function gamesPlayedMap(){
+  const gp={};
+  for(const k in KNOWN.g){const g=k[1],i=+k[2],j=+k[3];const a=GROUPS[g][i][0],b=GROUPS[g][j][0];gp[a]=(gp[a]||0)+1;gp[b]=(gp[b]||0)+1;}
+  for(const m in KNOWN.k){const kn=KNOWN.k[m];if(kn.a){gp[kn.a]=(gp[kn.a]||0)+1;gp[kn.b]=(gp[kn.b]||0)+1;}}
+  return gp;
+}
+
+function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function eloP(a,b){return 1/(1+Math.pow(10,(b-a)/400));}
+
+// Dixon-Coles 修正後抽比數
+function sampleScore(la,lb){
+  const pa=[],pb=[]; let fa=Math.exp(-la),fb=Math.exp(-lb);
+  for(let i=0;i<=MAXG;i++){pa[i]=fa;fa*=la/(i+1);}
+  for(let j=0;j<=MAXG;j++){pb[j]=fb;fb*=lb/(j+1);}
+  let tot=0; const grid=[];
+  for(let x=0;x<=MAXG;x++)for(let y=0;y<=MAXG;y++){
+    let t=1;
+    if(x===0&&y===0)t=1-la*lb*RHO; else if(x===0&&y===1)t=1+la*RHO;
+    else if(x===1&&y===0)t=1+lb*RHO; else if(x===1&&y===1)t=1-RHO;
+    const p=t*pa[x]*pb[y]; grid.push([x,y,p]); tot+=p;
+  }
+  let r=Math.random()*tot;
+  for(const [x,y,p] of grid){ r-=p; if(r<=0) return [x,y]; }
+  return [0,0];
+}
+// 一場：ko=true 必分勝負
+function lamPair(ta,tb){
+  const sup=(ta.r-tb.r)/150, f=0.34*(0.30/VOL), base=1.35;
+  const la=Math.min(Math.max(base*Math.exp(f*sup+(ta.att||0)+(tb.def||0)),0.18),5.2);
+  const lb=Math.min(Math.max(base*Math.exp(-f*sup+(tb.att||0)+(ta.def||0)),0.18),5.2);
+  return [la,lb];
+}
+function playMatch(ta, tb, ko){
+  let [la,lb]=lamPair(ta,tb);
+  let [ga,gb]=sampleScore(la,lb), w, pen=false;
+  if(ga>gb) w=0; else if(gb>ga) w=1;
+  else if(ko){
+    const [ea,eb]=sampleScore(la*0.34,lb*0.34); ga+=ea; gb+=eb;
+    if(ga>gb) w=0; else if(gb>ga) w=1;
+    else { pen=true; w = Math.random()<(0.5+(eloP(ta.r,tb.r)-0.5)*0.2)?0:1; }
+  } else w=-1;
+  return {ga,gb,w,pen};
+}
+
+function buildTeams(){
+  const t={};
+  for(const g of GL) GROUPS[g].forEach(x=> t[x[0]]={n:x[0],f:x[1],r:x[2],g});
+  return t;
+}
+function cmpTeam(a,b){
+  if(b.P!==a.P) return b.P-a.P;
+  if(b.GD!==a.GD) return b.GD-a.GD;
+  if(b.GF!==a.GF) return b.GF-a.GF;
+  return Math.random()-0.5;
+}
+function simGroups(teams, rec){
+  const standings={}; const thirds=[]; const gmatches=rec?{}:null;
+  for(const g of GL){
+    const st = GROUPS[g].map(x=>({tm:teams[x[0]],P:0,W:0,D:0,L:0,GF:0,GA:0}));
+    const pairs=[[0,1],[2,3],[0,2],[1,3],[0,3],[1,2]];
+    if(rec) gmatches[g]=[];
+    pairs.forEach(([i,j],pi)=>{
+      const kn=KNOWN.g['g'+g+i+j];
+      let ga,gb;
+      if(kn){ ga=kn.ga; gb=kn.gb; }
+      else { const r=playMatch(st[i].tm,st[j].tm,false); ga=r.ga; gb=r.gb; }
+      st[i].GF+=ga; st[i].GA+=gb; st[j].GF+=gb; st[j].GA+=ga;
+      if(ga>gb){st[i].P+=3;st[i].W++;st[j].L++;}
+      else if(gb>ga){st[j].P+=3;st[j].W++;st[i].L++;}
+      else{st[i].P++;st[j].P++;st[i].D++;st[j].D++;}
+      if(rec) gmatches[g].push({i,j,ga,gb,md:Math.floor(pi/2)+1,known:!!kn});
+    });
+    st.forEach(s=>s.GD=s.GF-s.GA);
+    st.sort(cmpTeam); standings[g]=st; thirds.push({...st[2], g});
+  }
+  return {standings, thirds, gmatches};
+}
+function rankThirds(thirds){
+  const r=[...thirds].sort(cmpTeam), adv=r.slice(0,8);
+  return {ranked:r, qualGroups:new Set(adv.map(x=>x.g)), advSet:new Set(adv.map(x=>x.g))};
+}
+function assignThirds(qualGroups){
+  const slots=T3SLOTS.map(s=>({m:s.m, opts:s.groups.filter(g=>qualGroups.has(g))}));
+  const used=new Set(); const res={};
+  (function bt(){
+    let pick=-1, best=1e9;
+    for(let i=0;i<slots.length;i++){
+      if(res[slots[i].m]!==undefined) continue;
+      const av=slots[i].opts.filter(g=>!used.has(g));
+      if(av.length<best){best=av.length;pick=i;}
+    }
+    if(pick===-1) return true;
+    for(const g of slots[pick].opts.filter(g=>!used.has(g))){
+      res[slots[pick].m]=g; used.add(g);
+      if(bt()) return true;
+      delete res[slots[pick].m]; used.delete(g);
+    }
+    return false;
+  })();
+  return res;
+}
+function resolveSide(side, ctx){
+  if(side.p){const pos=side.p[0]==='1'?0:1, g=side.p[1]; return ctx.standings[g][pos].tm;}
+  if(side.slot!==undefined){return ctx.standings[ctx.thirdAssign[side.slot]][2].tm;}
+  if(side.w!==undefined) return ctx.winners[side.w];
+  if(side.l!==undefined) return ctx.losers[side.l];
+}
+function simKO(ctx){
+  ctx.winners={}; ctx.losers={}; ctx.results={};
+  for(const m of KORD){
+    const def=KO[m];
+    const ta=resolveSide(def.a,ctx), tb=resolveSide(def.b,ctx);
+    const kn=KNOWN.k[m];
+    let win,los,ga,gb,pen=false;
+    if(kn){ win = kn.w===ta.n?ta:tb; los = win.n===ta.n?tb:ta; ga=kn.ga; gb=kn.gb; pen=(kn.ga===kn.gb); }
+    else { const r=playMatch(ta,tb,true); win=r.w===0?ta:tb; los=r.w===0?tb:ta; ga=r.ga; gb=r.gb; pen=r.pen; }
+    ctx.winners[m]=win; ctx.losers[m]=los; ctx.results[m]={ta,tb,ga,gb,win,los,pen};
+  }
+}
+// 跑一次：per-sim 抽 rating + 主場加成
+function simTournament(teams, gp, rec){
+  const j={};
+  for(const n in teams){const t=teams[n]; const s=SIGMA/Math.sqrt(1+((gp&&gp[n])||0)); j[n]={n:t.n,f:t.f,g:t.g, r:t.r + s*gauss(), att:t.att||0, def:t.def||0};}
+  const {standings, thirds, gmatches}=simGroups(j, rec);
+  const {ranked, qualGroups, advSet}=rankThirds(thirds);
+  const ctx={standings, thirdAssign:assignThirds(qualGroups)};
+  simKO(ctx);
+  return {standings, thirds, ranked, advSet, ctx, gmatches};
+}
+
+/* ============================================================
+   4. MONTE CARLO
+   ============================================================ */
+function stageReached(ctx, n){
+  const inM=ms=>ms.some(m=>ctx.results[m].ta.n===n||ctx.results[m].tb.n===n);
+  return {
+    r32: inM([73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88]),
+    r16: inM([89,90,91,92,93,94,95,96]),
+    qf:  inM([97,98,99,100]),
+    sf:  inM([101,102]),
+    fin: inM([104]),
+    champ: ctx.results[104].win.n===n,
+  };
+}
+let MC_USED_WORKER=false;
+function buildWorkerSrc(){
+  const fns=[eloStep,lamPair,formRatings,gamesPlayedMap,gauss,eloP,sampleScore,playMatch,buildTeams,cmpTeam,simGroups,rankThirds,assignThirds,resolveSide,simKO,simTournament,stageReached];
+  const consts=`var HPRIOR=${JSON.stringify(HPRIOR)},GROUPS=${JSON.stringify(GROUPS)},GL=${JSON.stringify(GL)},T3SLOTS=${JSON.stringify(T3SLOTS)},KORD=${JSON.stringify(KORD)},KO=${JSON.stringify(KO)},HOST=${JSON.stringify(HOST)},MD=${JSON.stringify(MD)},RHO=${RHO},MAXG=${MAXG},K_LEARN=${K_LEARN};var VOL=0.3,SIGMA=58,LEARN=true,KNOWN={g:{},k:{}};`;
+  const handler="onmessage=function(e){var d=e.data;VOL=d.VOL;SIGMA=d.SIGMA;LEARN=d.LEARN;KNOWN=d.KNOWN;var N=d.N;var teams=formRatings(),gp=gamesPlayedMap(),names=Object.keys(teams),tally={};names.forEach(function(n){tally[n]={r32:0,r16:0,qf:0,sf:0,fin:0,champ:0,g:teams[n].g};});for(var k=0;k<N;k++){var ctx=simTournament(teams,gp).ctx;for(var x=0;x<names.length;x++){var n=names[x],f=stageReached(ctx,n),t=tally[n];if(f.r32)t.r32++;if(f.r16)t.r16++;if(f.qf)t.qf++;if(f.sf)t.sf++;if(f.fin)t.fin++;if(f.champ)t.champ++;}if((k&511)===0)postMessage({p:k/N});}var rows=names.map(function(n){var t=tally[n];return{n:n,f:teams[n].f,g:t.g,r32:t.r32/N,r16:t.r16/N,qf:t.qf/N,sf:t.sf/N,fin:t.fin/N,champ:t.champ/N};}).sort(function(a,b){return b.champ-a.champ||b.fin-a.fin;});postMessage({done:true,rows:rows});};";
+  return consts+"\n"+fns.map(f=>f.toString()).join("\n")+"\n"+handler;
+}
+function runMonteCarloWorker(N,onProgress){
+  return new Promise((resolve,reject)=>{
+    let url;
+    try{ url=URL.createObjectURL(new Blob([buildWorkerSrc()],{type:'text/javascript'})); }catch(e){ return reject(e); }
+    const wk=new Worker(url);
+    wk.onmessage=(e)=>{ if(e.data.p!=null) onProgress(e.data.p);
+      else if(e.data.done){ onProgress(1); wk.terminate(); try{URL.revokeObjectURL(url);}catch(_){} resolve(e.data.rows); } };
+    wk.onerror=(err)=>{ wk.terminate(); try{URL.revokeObjectURL(url);}catch(_){} reject(err); };
+    wk.postMessage({N, VOL, SIGMA, LEARN, KNOWN});
+  });
+}
+async function runMonteCarlo(N,onProgress){
+  MC_USED_WORKER=false;
+  if(typeof Worker!=='undefined' && typeof Blob!=='undefined' && typeof URL!=='undefined' && URL.createObjectURL){
+    try{ const r=await runMonteCarloWorker(N,onProgress); MC_USED_WORKER=true; return r; }catch(e){}
+  }
+  return runMonteCarloInline(N,onProgress);
+}
+async function runMonteCarloInline(N, onProgress){
+  const teams=formRatings(), gp=gamesPlayedMap(), names=Object.keys(teams);
+  const tally={}; names.forEach(n=>tally[n]={r32:0,r16:0,qf:0,sf:0,fin:0,champ:0,g:teams[n].g});
+  const CHUNK=150; let done=0;
+  return new Promise(resolve=>{
+    function step(){
+      const end=Math.min(done+CHUNK,N);
+      for(;done<end;done++){
+        const {ctx}=simTournament(teams, gp);
+        for(const n of names){
+          const f=stageReached(ctx,n), t=tally[n];
+          if(f.r32)t.r32++; if(f.r16)t.r16++; if(f.qf)t.qf++;
+          if(f.sf)t.sf++; if(f.fin)t.fin++; if(f.champ)t.champ++;
+        }
+      }
+      onProgress(done/N);
+      if(done<N) setTimeout(step,0);
+      else resolve(names.map(n=>{const t=tally[n];return {n,f:teams[n].f,g:t.g,
+        r32:t.r32/N,r16:t.r16/N,qf:t.qf/N,sf:t.sf/N,fin:t.fin/N,champ:t.champ/N};
+      }).sort((a,b)=>b.champ-a.champ||b.fin-a.fin));
+    }
+    step();
+  });
+}
+
+/* ============================================================
+   5. RENDER
+   ============================================================ */
+const $=s=>document.querySelector(s);
+/* 實力 override（傷停/陣容 nudge）持久化 */
+function loadOvr(){ try{const v=JSON.parse(localStorage.getItem('wc26ovr')); return v&&typeof v==='object'?v:{};}catch(e){return {};} }
+let OVR=loadOvr();
+const RDEFAULT={};   // 記低出廠值
+for(const g of GL) GROUPS[g].forEach(x=>{ RDEFAULT[x[0]]=x[2]; if(isFinite(OVR[x[0]])) x[2]=OVR[x[0]]; });
+function saveOvr(){ try{localStorage.setItem('wc26ovr',JSON.stringify(OVR));}catch(e){} }
+function ovrKey(){ return Object.keys(OVR).length?JSON.stringify(OVR):''; }
+let TEAMS_FLAT=buildTeams();
+const fl=t=>`<span class="fl">${t.f}</span>`;
+
+function renderOneGroups(standings, advSet, gmatches){
+  const host=$("#oneGroups"); host.innerHTML="";
+  for(const g of GL){
+    let rows="";
+    standings[g].forEach((s,i)=>{
+      const cls=i===0?"q1":i===1?"q2":i===2?("q3"+(advSet.has(g)?"":" out")):"";
+      rows+=`<div class="grow ${cls}"><span class="pos">${i+1}</span>
+        <span class="nm">${fl(s.tm)}${s.tm.n}</span>
+        <span class="st">${s.W}-${s.D}-${s.L}</span>
+        <span class="st">${s.GD>0?'+':''}${s.GD}</span><span class="st">${s.GF}</span>
+        <span class="pt">${s.P}</span></div>`;
+    });
+    let gmHTML="";
+    if(gmatches&&gmatches[g]){
+      const rowsM=gmatches[g].map(mt=>{
+        const A=GROUPS[g][mt.i], B=GROUPS[g][mt.j];
+        return `<div class="gmrow"><span class="md">R${mt.md}</span>
+          <span class="t">${A[1]}${A[0]}</span><span class="sc"><b>${mt.ga}-${mt.gb}</b></span>
+          <span class="t r">${B[0]}${B[1]}</span>${mt.known?'<span class="kn">實</span>':''}</div>`;
+      }).join("");
+      gmHTML=`<button class="gmbtn" onclick="toggleGM('${g}')" id="gmb-${g}">📋 顯示分組賽賽果</button>
+        <div class="gmlist hide" id="gm-${g}">${rowsM}</div>`;
+    }
+    host.innerHTML+=`<div class="gcard"><h3>${g} 組</h3>
+      <div class="grow" style="border-bottom:1px solid var(--line2);color:var(--mut2);font-size:11px;font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;letter-spacing:.1em">
+      <span class="pos">#</span><span>球隊</span><span class="st">W-D-L</span><span class="st">GD</span><span class="st">GF</span><span class="pt">Pts</span></div>${rows}${gmHTML}</div>`;
+  }
+}
+function toggleGM(g){
+  const el=document.getElementById('gm-'+g), b=document.getElementById('gmb-'+g);
+  if(!el)return; const hidden=el.classList.toggle('hide');
+  if(b) b.textContent = hidden ? '📋 顯示分組賽賽果' : '🔼 收起分組賽賽果';
+}
+function renderThirds(ranked, advSet){
+  let rows="";
+  ranked.forEach((s,i)=>{
+    rows+=`<tr class="${advSet.has(s.g)?'adv':''}"><td>${i+1}</td>
+      <td><span class="fl">${s.tm.f}</span> ${s.tm.n}</td><td>${s.g} 組</td>
+      <td>${s.P}</td><td>${s.GD>0?'+':''}${s.GD}</td><td>${s.GF}</td>
+      <td>${advSet.has(s.g)?'✔ 晉級':'淘汰'}</td></tr>`;
+  });
+  $("#one3").innerHTML=`<table class="t3"><tr><th>#</th><th>球隊</th><th>來自</th><th>分</th><th>球差</th><th>入球</th><th>結果</th></tr>${rows}</table>`;
+}
+function tieHTML(m,res){
+  const wa=res.win.n===res.ta.n;
+  return `<div><div class="mlabel">M${m}</div><div class="tie">
+    <div class="sd ${wa?'w':''}"><span class="nm">${fl(res.ta)}${res.ta.n}</span><span class="sc">${res.ga}</span></div>
+    <div class="sd ${!wa?'w':''}"><span class="nm">${fl(res.tb)}${res.tb.n}</span><span class="sc">${res.gb}</span></div>
+    ${res.pen?`<div class="pen">十二碼 · ${res.win.n} 勝</div>`:''}</div></div>`;
+}
+function renderBracket(ctx){
+  const host=$("#oneBracket"); host.innerHTML="";
+  ROUND_DEF.forEach(rd=>{
+    let inner=`<h4>${rd.name}</h4>`;
+    rd.ms.forEach(m=> inner+=tieHTML(m,ctx.results[m]));
+    host.innerHTML+=`<div class="col">${inner}</div>`;
+  });
+  const champ=ctx.results[104].win;
+  host.innerHTML+=`<div class="col" style="justify-content:center;gap:18px">
+    <div class="champ"><div class="t">★ 冠軍 ★</div><div class="n">${fl(champ)}${champ.n}</div></div>
+    <div style="text-align:center"><div class="mlabel" style="padding-left:0">季軍戰 M103</div>${tieHTML(103,ctx.results[103])}</div></div>`;
+}
+function renderOne(){
+  const sim=simTournament(formRatings(), gamesPlayedMap(), true);
+  $("#oneEmpty").classList.add("hide"); $("#oneContent").classList.remove("hide");
+  renderOneGroups(sim.standings, sim.advSet, sim.gmatches);
+  renderThirds(sim.ranked, sim.advSet);
+  renderBracket(sim.ctx);
+}
+
+let lastRows=null, lastN=0, sortKey="champ";
+function applyShrink(rows){
+  if(!SHRINK) return rows;
+  const out=rows.map(r=>({...r}));
+  let tot=0; out.forEach(r=>{ if(MARKET[r.n]!==undefined){ const mp=MARKET[r.n]/100; r.champ=Math.pow(Math.max(r.champ,1e-10),1-SHRINK)*Math.pow(mp,SHRINK); } tot+=r.champ; });
+  if(tot>0) out.forEach(r=>r.champ/=tot);
+  return out;
+}
+
+/* ---- 校準工具 ---- */
+let TEMP=1.0;
+function postProcess(rows){ return applyShrink(applyTemp(rows)); }   // 統一次序：先 τ 校準模型，後同市場池化
+function applyTemp(rows){
+  if(TEMP===1) return rows;
+  const out=rows.map(r=>({...r})); let tot=0;
+  out.forEach(r=>{ r.champ=Math.pow(Math.max(r.champ,1e-10),1/TEMP); tot+=r.champ; });
+  if(tot>0) out.forEach(r=>r.champ/=tot);
+  return out;
+}
+function autoCalibT(){
+  if(!lastRows){ toast("請先跑 MC"); return; }
+  const mkt=Object.entries(MARKET).map(([n,m])=>{ const r=lastRows.find(x=>x.n===n); return r?{n,m:m/100,c:r.champ}:null; }).filter(Boolean);
+  if(!mkt.length) return;
+  function brier(T){ let tot=mkt.reduce((s,x)=>s+Math.pow(x.c,1/T),0)||1;
+    return mkt.reduce((s,x)=>{ const p=Math.pow(x.c,1/T)/tot; return s+(p-x.m)**2; },0)/mkt.length; }
+  let lo=0.3,hi=4.0; const phi=(Math.sqrt(5)-1)/2;
+  for(let k=0;k<60;k++){ const c=hi-(hi-lo)*phi, d=lo+(hi-lo)*phi;
+    brier(c)<brier(d)?hi=d:lo=c; }
+  TEMP=(lo+hi)/2;
+  const tdisp=document.getElementById('tempDisp'); if(tdisp) tdisp.textContent='τ = '+TEMP.toFixed(3);
+  renderProb(lastRows,lastN); toast('τ 自動校準完成：'+TEMP.toFixed(3));
+}
+function computeRPS(pW,pD,pL,ga,gb){ const F1=pW,F2=pW+pD; const r=ga>gb?'W':(ga<gb?'L':'D'); const[O1,O2]=r==='W'?[1,1]:(r==='D'?[0,1]:[0,0]); return 0.5*((F1-O1)**2+(F2-O2)**2); }
+function computeLL(pW,pD,pL,ga,gb){ const r=ga>gb?'W':(ga<gb?'L':'D'); const p=r==='W'?pW:(r==='D'?pD:pL); return p>0?-Math.log(p):10; }
+function groupPosProbs(g,effTeams,force){
+  const arr=GROUPS[g], pairs=[[0,1],[2,3],[0,2],[1,3],[0,3],[1,2]];
+  const mp=pairs.map(([i,j],pi)=>{
+    if(force&&force.pi===pi){ const r=[0,0,0]; r[force.o]=1; return {i,j,pW:r[0],pD:r[1],pL:r[2],fixed:true}; }
+    const id='g'+g+i+j; const kn=KNOWN.g[id];
+    if(kn){ const o=kn.ga>kn.gb?0:(kn.ga<kn.gb?2:1); const r=[0,0,0]; r[o]=1; return {i,j,pW:r[0],pD:r[1],pL:r[2],fixed:true}; }
+    const an=analyzeT(effTeams[arr[i][0]], effTeams[arr[j][0]]); return {i,j,pW:an.pW,pD:an.pD,pL:an.pL,fixed:false}; });
+  const unf=mp.filter(m=>!m.fixed), nU=unf.length;
+  const posCount=arr.map(()=>[0,0,0,0]);
+  for(let mask=0; mask<Math.pow(3,nU); mask++){
+    let prob=1, m2=mask; const outcomes=[];
+    for(const mpi of mp){ if(mpi.fixed){ outcomes.push(mpi.pW===1?0:mpi.pD===1?1:2); }
+      else{ const o=m2%3; m2=Math.floor(m2/3); outcomes.push(o); prob*=(o===0?mpi.pW:o===1?mpi.pD:mpi.pL); } }
+    if(prob<1e-12) continue;
+    const st=arr.map((_,idx)=>({idx,P:0}));
+    pairs.forEach(([i,j],pi)=>{ const o=outcomes[pi];
+      if(o===0){st[i].P+=3;}else if(o===1){st[i].P++;st[j].P++;}else{st[j].P+=3;} });
+    st.sort((a,b)=>b.P-a.P);
+    for(let lo=0;lo<4;){ let hi=lo+1; while(hi<4&&st[hi].P===st[lo].P)hi++;
+      const share=prob/(hi-lo);
+      for(let k=lo;k<hi;k++) for(let p=lo;p<hi;p++) posCount[st[k].idx][p]+=share;
+      lo=hi; }
+  }
+  const out={}; arr.forEach((x,idx)=>out[x[0]]=posCount[idx]); return out;
+}
+function precomputeGroupQual(effTeams){ const qual={}; for(const g of GL) qual[g]=groupPosProbs(g,effTeams); return qual; }
+
+function renderProb(rows, N){
+  lastRows=rows; lastN=N;
+  renderChampTrend();
+  rows=postProcess(rows);
+  $("#probTitle").textContent=`各階段晉級機率 · ${N.toLocaleString()} 次模擬`+(knownCount()?`（已條件化於 ${knownCount()} 場真實賽果）`:`（賽前）`)+(SHRINK?` · 幾何池化${SHRINK*100}%`:'')+(TEMP!==1?` · τ=${TEMP.toFixed(2)}`:'');
+  // metrics: Brier vs market + SE
+  let brier=0,c=0; rows.forEach(r=>{if(MARKET[r.n]!==undefined){const d=r.champ*100-MARKET[r.n];brier+=d*d;c++;}});
+  brier=c?brier/c:0;
+  const top=rows[0]?rows[0].champ:0; const se=1.96*Math.sqrt(top*(1-top)/N)*100;
+  $("#metrics").innerHTML=`
+    <div class="metric"><div class="k">對市場 Brier 偏差</div><div class="v">${brier.toFixed(1)}<small> %²（9 隊）</small></div></div>
+    <div class="metric"><div class="k">95% MC 誤差</div><div class="v">±${se.toFixed(2)}<small>% · 冠軍熱門</small></div></div>
+    <div class="metric"><div class="k">模擬次數</div><div class="v">${N.toLocaleString()}</div></div>
+    <div class="metric"><div class="k">Temperature τ</div><div class="v" id="tempDisp">${TEMP===1?"跑 MC 後自動校準":TEMP.toFixed(3)}</div></div>`;
+  // 市場分歧 callout（Top 3 |Δ|）
+  const dvs=rows.filter(r=>MARKET[r.n]!==undefined).map(r=>({n:r.n,dv:r.champ*100-MARKET[r.n],m:MARKET[r.n],c:r.champ*100}))
+    .sort((a,b)=>Math.abs(b.dv)-Math.abs(a.dv)).slice(0,3);
+  const dvEl=$("#dvLine");
+  if(dvEl) dvEl.innerHTML=dvs.length?('🔍 模型 vs 市場最大分歧：'+dvs.map(x=>`<b>${x.n}</b> ${x.c.toFixed(1)}% vs ${x.m}% <span class="${x.dv>=0?'dv-up':'dv-dn'}">${x.dv>=0?'+':''}${x.dv.toFixed(1)}pp</span>`).join('　·　')+'<small style="color:var(--mut2)">　（分歧大 = 最值得研究嘅盤）</small>'):'';
+  const cols=[["r32","R32"],["r16","16 強"],["qf","8 強"],["sf","4 強"],["fin","決賽"],["champ","奪冠"]];
+  let head=`<tr><th>#</th><th class="l">球隊</th>`+cols.map(c=>`<th data-k="${c[0]}">${c[1]}</th>`).join("")+`<th>市場%</th></tr>`;
+  const sorted=[...rows].sort((a,b)=>b[sortKey]-a[sortKey]);
+  let body="";
+  sorted.forEach((r,i)=>{
+    const tds=cols.map(c=>{
+      const v=r[c[0]], pct=v*100, cls=c[0]==="champ"?"pcell win-c":"pcell";
+      const txt=pct>=99.5?"100%":(pct<0.5&&pct>0?"<1%":(pct===0?"–":pct.toFixed(pct<10?1:0)+"%"));
+      const se=c[0]==="champ"&&v>0&&v<1?`<small class="sem">±${(Math.sqrt(v*(1-v)/N)*100).toFixed(1)}</small>`:"";
+      return `<td class="${cls}"><div class="fillb" style="width:${Math.min(v*100,100)}%"></div><span class="v">${txt}${se}</span></td>`;
+    }).join("");
+    let mk='<span style="color:var(--mut2)">–</span>';
+    if(MARKET[r.n]!==undefined){ const dv=r.champ*100-MARKET[r.n];
+      const arrow=dv>=1.5?`<span class="dv-up" title="模型高過市場（市場低估？）">▲${dv.toFixed(1)}</span>`:dv<=-1.5?`<span class="dv-dn" title="模型低過市場（市場高估？）">▼${Math.abs(dv).toFixed(1)}</span>`:'';
+      mk=`<span class="mkt">${MARKET[r.n].toFixed(1)}%</span>${arrow}`; }
+    body+=`<tr><td class="rank">${i+1}</td>
+      <td class="l"><div class="nm"><span class="fl">${r.f}</span>${r.n}<span class="gtag">${r.g}</span></div></td>${tds}<td>${mk}</td></tr>`;
+  });
+  $("#probTbl").innerHTML=head+body;
+  $("#probTbl").querySelectorAll("th[data-k]").forEach(th=>th.onclick=()=>{sortKey=th.dataset.k;renderProb(lastRows,lastN);});
+}
+function renderStandings(){
+  const wrap=$("#standWrap"); if(!wrap) return;
+  const st=buildKnownState();
+  const pairs=['01','23','02','13','03','12'];
+  const qual=precomputeGroupQual(st.eff);
+  let html='';
+  for(const g of GL){
+    const rows=st.standings[g];
+    const done=pairs.every(p=>KNOWN.g['g'+g+p[0]+p[1]]);
+    html+=`<div class="sttbl"><div class="gsec-h">${g} 組${done?' · 已完成':''}</div>
+      <div style="overflow-x:auto"><table class="ptbl"><tr><th class="l">球隊</th><th>賽</th><th>勝</th><th>和</th><th>負</th><th>得失</th><th>分</th><th>形勢</th><th title="解析枚舉（W/D/L 全組合）出線機率，條件化於已知賽果，零抽樣誤差">解析出線</th></tr>`;
+    rows.forEach((s,i)=>{
+      const gp=s.W+s.D+s.L;
+      const status = i<2?'<span class="qok">出線區</span>':(i===2?'<span class="q3">爭第三</span>':'<span class="qno">出局區</span>');
+      const qp=qual[g]?qual[g][s.tm.n]:null;
+      const pq=qp?(qp[0]+qp[1])*100:null; const p3=qp?qp[2]*100:null;
+      const qcol=pq!==null?`<td><b style="color:${pq>60?'var(--green)':pq>25?'var(--gold)':'var(--red)'}">${pq.toFixed(0)}%</b>${p3>5?`<small style="color:var(--mut2)"> / 3rd ${p3.toFixed(0)}%</small>`:''}` :'<td>–';
+      html+=`<tr><td class="l">${fl(s.tm)} ${s.tm.n}</td><td>${gp}</td><td>${s.W}</td><td>${s.D}</td><td>${s.L}</td><td>${s.GF}:${s.GA}</td><td><b>${s.P}</b></td><td>${status}</td>${qcol}</td></tr>`;
+    });
+    html+='</table></div></div>';
+  }
+  const thirds=GL.map(g=>({...st.standings[g][2], g})).sort(cmpDisp);
+  html+=`<div class="sttbl"><div class="gsec-h">最佳第三名爭奪 · 取 8 席入 32 強</div>
+    <div style="overflow-x:auto"><table class="ptbl"><tr><th>#</th><th class="l">球隊</th><th>組</th><th>分</th><th>得失差</th><th>狀態</th></tr>`;
+  thirds.forEach((t,i)=>{ const ok=i<8, gd=t.GF-t.GA;
+    html+=`<tr${i===7?' class="cutline"':''}><td>${i+1}</td><td class="l">${fl(t.tm)} ${t.tm.n}</td><td>${t.g}</td><td><b>${t.P}</b></td><td>${gd>=0?'+':''}${gd}</td><td>${ok?'<span class="qok">✅ 入圍</span>':'<span class="qno">❌ 出局</span>'}</td></tr>`; });
+  html+=`</table></div></div>`;
+  // 校準計分卡
+  const scored=[];
+  const pushScored=(id,kn)=>{ const ps=[kn.pW,kn.pD,kn.pL]; const top=ps.indexOf(Math.max(...ps));
+    const act=kn.ga>kn.gb?0:(kn.ga<kn.gb?2:1);
+    scored.push({id,rps:computeRPS(kn.pW,kn.pD,kn.pL,kn.ga,kn.gb),ll:computeLL(kn.pW,kn.pD,kn.pL,kn.ga,kn.gb),pTop:ps[top],hit:top===act?1:0}); };
+  for(const[id,kn] of Object.entries(KNOWN.g)){if(kn.pW!==undefined)pushScored(id,kn);}
+  for(const[m,kn] of Object.entries(KNOWN.k)){if(kn.pW!==undefined)pushScored('k'+m,kn);}
+  // 累計訊號結算（鎖定場 × 已貼價 × 賽前 EV>0，每注 1 單位）
+  let sigN=0,sigHit=0,sigPL=0;
+  const settleOne=(id,kind,m,kn)=>{
+    if(!kn.locked) return;
+    const bak=kn; if(kind==='g')delete KNOWN.g[id]; else delete KNOWN.k[m];
+    const eff2=formRatings();
+    let A2,B2;
+    if(kind==='g'){ A2=eff2[GROUPS[id[1]][+id[2]][0]]; B2=eff2[GROUPS[id[1]][+id[3]][0]]; }
+    else { A2=eff2[kn.a]; B2=eff2[kn.b]; }
+    if(kind==='g')KNOWN.g[id]=bak; else KNOWN.k[m]=bak;
+    if(!A2||!B2) return;
+    const an2=analyzeT(A2,B2), bd2=marketBoard(an2.la,an2.lb);
+    const r=settleMatchOdds(kind==='g'?id:'k'+m, kn.ga, kn.gb, an2, bd2);
+    for(const row of r.rows){ if(row.anch||row.ev==null||row.ev<=0) continue;
+      sigN++; if(row.pl>0)sigHit++; sigPL+=row.pl; }
+  };
+  for(const[id,kn] of Object.entries(KNOWN.g)) settleOne(id,'g',null,kn);
+  for(const[m,kn] of Object.entries(KNOWN.k)) settleOne('k'+m,'k',+m,kn);
+  if(scored.length){
+    const mr=scored.reduce((s,x)=>s+x.rps,0)/scored.length, ml=scored.reduce((s,x)=>s+x.ll,0)/scored.length;
+    const naive=0.222;
+    html+=`<div class="sttbl"><div class="gsec-h">校準計分卡（${scored.length} 場手動賽果，小組＋淘汰賽90分鐘）</div>
+      <div class="metrics" style="margin-bottom:8px">
+        <div class="metric"><div class="k">平均 RPS ↓</div><div class="v" style="color:${mr<0.20?'var(--green)':mr<0.24?'var(--gold)':'var(--red)'}">${mr.toFixed(3)}<small> / 基準 ${naive}</small></div></div>
+        <div class="metric"><div class="k">平均 log loss ↓</div><div class="v">${ml.toFixed(3)}</div></div>
+        <div class="metric"><div class="k">場數</div><div class="v">${scored.length}</div></div>
+        ${sigN?`<div class="metric"><div class="k">訊號結算（EV&gt;0 每注1單位）</div><div class="v" style="color:${sigPL>=0?'var(--green)':'var(--red)'}">${sigPL>=0?'+':''}${sigPL.toFixed(2)}<small> · ${sigHit}/${sigN} 中</small></div></div>`:''}
+      </div>
+      <div class="note">RPS（Ranked Probability Score）0 完美 · ${naive} 三七平基準。你的模型 RPS&lt;${naive} 代表有預測力。</div>
+      ${(()=>{ if(scored.length<8) return '<div class="note">入滿 8 場後顯示 reliability 校準棒（預測機率 vs 實際命中率）。</div>';
+        const buckets=[{lo:0,hi:0.45,lbl:'<45%'},{lo:0.45,hi:0.60,lbl:'45–60%'},{lo:0.60,hi:1.01,lbl:'≥60%'}];
+        const bars=buckets.map(b=>{ const xs=scored.filter(x=>x.pTop>=b.lo&&x.pTop<b.hi);
+          if(!xs.length) return '';
+          const avgP=xs.reduce((s,x)=>s+x.pTop,0)/xs.length*100, hit=xs.reduce((s,x)=>s+x.hit,0)/xs.length*100;
+          return `<div class="rel-row"><span class="rel-lbl">${b.lbl} (${xs.length}場)</span>
+            <div class="rel-bars"><div class="rel-bar pred" style="width:${avgP}%">預測 ${avgP.toFixed(0)}%</div>
+            <div class="rel-bar act" style="width:${Math.max(hit,3)}%">命中 ${hit.toFixed(0)}%</div></div></div>`; }).join('');
+        return `<div class="gsec-h" style="margin-top:10px">Reliability（首選結果：預測機率 vs 實際命中）</div>${bars}<div class="note">兩條棒越接近 = 校準越好。預測長過命中 = 過度自信。</div>`; })()}
+    </div>`;
+  }
+  html+=`<div class="note">由你已輸入嘅賽果即時計算${st.complete?'':'（小組未踢完，形勢屬暫定）'}。「解析出線」= W/D/L 全枚舉（${2}^0 到 3^6=729 組合）精確機率，條件化已知賽果，零抽樣誤差。校準計分卡只計手動輸入場次（賽前機率快照於首次儲存時定格，排除本場自身影響；🎲 模擬場次唔計）。</div>`;
+  wrap.innerHTML=html;
+}
+
+/* ============================================================
+   6. 手動逐場引擎
+   ============================================================ */
+let M=null;
+const MD=[[[0,1],[2,3]],[[0,2],[1,3]],[[0,3],[1,2]]];   // 3 輪賽程
+
+// 解析分析（解析式，非抽樣）：勝/和/負、xG、最可能比數
+function analyzeL(la,lb){
+  const pa=[],pb=[]; let fa=Math.exp(-la),fb=Math.exp(-lb);
+  for(let i=0;i<=MAXG;i++){pa[i]=fa;fa*=la/(i+1);}
+  for(let j=0;j<=MAXG;j++){pb[j]=fb;fb*=lb/(j+1);}
+  let tot=0; const sc=[];
+  for(let x=0;x<=MAXG;x++)for(let y=0;y<=MAXG;y++){
+    let t=1; if(x===0&&y===0)t=1-la*lb*RHO;else if(x===0&&y===1)t=1+la*RHO;
+    else if(x===1&&y===0)t=1+lb*RHO;else if(x===1&&y===1)t=1-RHO;
+    const p=t*pa[x]*pb[y]; tot+=p; sc.push([x,y,p]);
+  }
+  let pW=0,pD=0,pL=0;
+  for(const s of sc){s[2]/=tot; if(s[0]>s[1])pW+=s[2];else if(s[0]<s[1])pL+=s[2];else pD+=s[2];}
+  sc.sort((a,b)=>b[2]-a[2]);
+  return {la,lb,pW,pD,pL,top:sc.slice(0,5)};
+}
+function analyze(ra,rb,gscale){
+  const sup=(ra-rb)/150, f=0.34*(0.30/VOL), base=1.35;
+  let la=Math.min(Math.max(base*Math.exp(f*sup),0.18),5.2);
+  let lb=Math.min(Math.max(base*Math.exp(-f*sup),0.18),5.2);
+  if(gscale&&gscale!==1){ la=Math.min(la*gscale,5.2); lb=Math.min(lb*gscale,5.2); }
+  return analyzeL(la,lb);
+}
+function analyzeT(ta,tb,gscale){
+  let [la,lb]=lamPair(ta,tb);
+  if(gscale&&gscale!==1){ la=Math.min(la*gscale,5.2); lb=Math.min(lb*gscale,5.2); }
+  return analyzeL(la,lb);
+}
+function cmpDisp(a,b){return b.P-a.P||(b.GF-b.GA)-(a.GF-a.GA)||b.GF-a.GF||0;}
+
+/* ---- 盤口計算 ---- */
+function buildJoint(la,lb){
+  const pa=[],pb=[]; let fa=Math.exp(-la),fb=Math.exp(-lb);
+  for(let i=0;i<=MAXG;i++){pa[i]=fa;fa*=la/(i+1);}
+  for(let j=0;j<=MAXG;j++){pb[j]=fb;fb*=lb/(j+1);}
+  let tot=0; const J=[];
+  for(let x=0;x<=MAXG;x++)for(let y=0;y<=MAXG;y++){
+    let t=1; if(x===0&&y===0)t=1-la*lb*RHO;else if(x===0&&y===1)t=1+la*RHO;
+    else if(x===1&&y===0)t=1+lb*RHO;else if(x===1&&y===1)t=1-RHO;
+    const p=t*pa[x]*pb[y]; J.push([x,y,p]); tot+=p;
+  }
+  J.forEach(c=>c[2]/=tot); return J;
+}
+const _S=(J,f)=>{let s=0;for(const[x,y,p]of J)if(f(x,y))s+=p;return s;};
+/* ---- 市場錨定 ---- */
+function probs3(la,lb){
+  const N=10, pa=[Math.exp(-la)], pb=[Math.exp(-lb)];
+  for(let i=1;i<=N;i++){pa.push(pa[i-1]*la/i);pb.push(pb[i-1]*lb/i);}
+  let pW=0,pD=0,pL=0,tot=0;
+  for(let x=0;x<=N;x++)for(let y=0;y<=N;y++){
+    let t=1; if(x===0&&y===0)t=1-la*lb*RHO;else if(x===0&&y===1)t=1+la*RHO;
+    else if(x===1&&y===0)t=1+lb*RHO;else if(x===1&&y===1)t=1-RHO;
+    const p=t*pa[x]*pb[y]; tot+=p;
+    if(x>y)pW+=p;else if(x<y)pL+=p;else pD+=p;
+  }
+  return {pW:pW/tot,pD:pD/tot,pL:pL/tot};
+}
+function devig(o1,oX,o2,method){ /* method 'pow'(default)|'prop' */
+  if(!(o1>1&&oX>1&&o2>1)) return null;
+  const q=[1/o1,1/oX,1/o2], ovr=q[0]+q[1]+q[2];
+  if(ovr<=1.001) return null;
+  if(method==='prop') return {p:q.map(x=>x/ovr), ovr};
+  let lo=0.5,hi=4;
+  for(let i=0;i<60;i++){const k=(lo+hi)/2;
+    (Math.pow(q[0],k)+Math.pow(q[1],k)+Math.pow(q[2],k)>1)?lo=k:hi=k;}
+  const k=(lo+hi)/2;
+  return {p:[Math.pow(q[0],k),Math.pow(q[1],k),Math.pow(q[2],k)], ovr, k};
+}
+function solveLambda(TW,TD){
+  const TL=1-TW-TD, Tr=TW/(TW+TL);
+  const inner=(m)=>{ let lo=-3.5,hi=3.5;
+    for(let i=0;i<36;i++){const sm=(lo+hi)/2,r=Math.exp(sm);
+      const P=probs3(m*r/(1+r), m/(1+r));
+      (P.pW/(P.pW+P.pL)<Tr)?lo=sm:hi=sm;}
+    const r=Math.exp((lo+hi)/2); return [m*r/(1+r), m/(1+r)]; };
+  let lo=0.5,hi=7.5;
+  for(let i=0;i<36;i++){const m=(lo+hi)/2; const [la,lb]=inner(m);
+    (probs3(la,lb).pD>TD)?lo=m:hi=m;}
+  const [la,lb]=inner((lo+hi)/2);
+  const P=probs3(la,lb), res=Math.abs(P.pW-TW)+Math.abs(P.pD-TD);
+  return {la,lb,res};
+}
+function anchorFor(id){
+  const oh=parseFloat(ODDS[id+'_h']), od=parseFloat(ODDS[id+'_d']), oa=parseFloat(ODDS[id+'_a']);
+  const dv=devig(oh,od,oa); if(!dv) return null;
+  const sl=solveLambda(dv.p[0],dv.p[1]); if(sl.res>0.01) return null;
+  const bd=marketBoard(sl.la,sl.lb);
+  const dv2=devig(oh,od,oa,'prop'); const sl2=solveLambda(dv2.p[0],dv2.p[1]);
+  const Jalt=sl2.res<=0.01?marketBoard(sl2.la,sl2.lb).J:bd.J;
+  return {la:sl.la,lb:sl.lb,bd,dv,Jalt};
+}
+/* EV 區間：模型模式用 σ 擾動 supremacy；錨定模式用兩種除水法差 */
+function bandJoints(ctx){
+  if(ctx.anch) return [ctx.anch.bd.J, ctx.anch.Jalt];
+  const gp=gamesPlayedMap();
+  const sA=SIGMA/Math.sqrt(1+(gp[ctx.A.n]||0)), sB=SIGMA/Math.sqrt(1+(gp[ctx.B.n]||0));
+  const dr=Math.sqrt(sA*sA+sB*sB), f=0.34*(0.30/VOL), k=Math.exp(f*dr/150);
+  return [marketBoard(Math.min(ctx.an.la*k,5.5), Math.max(ctx.an.lb/k,0.15)).J,
+          marketBoard(Math.max(ctx.an.la/k,0.15), Math.min(ctx.an.lb*k,5.5)).J];
+}
+function evBandTxt(pMain,pLo,pHi,book){
+  const b=parseFloat(book); if(!isFinite(b)||b<=1) return null;
+  const evs=[pMain*b-1,pLo*b-1,pHi*b-1].sort((x,y)=>x-y);
+  const ev=pMain*b-1, lo=evs[0], hi=evs[2];
+  const k=Math.max(0,((b-1)*pMain-(1-pMain))/(b-1))*0.25;
+  return {ev,lo,hi,k,txt:(ev>=0?'+':'')+(ev*100).toFixed(1)+'%（'+(lo>=0?'+':'')+(lo*100).toFixed(1)+'〜'+(hi>=0?'+':'')+(hi*100).toFixed(1)+'）·K'+(k*100).toFixed(1)+'%',
+    cls: lo>0?'bev pos':(ev>0?'bev mid':'bev neg')};
+}
+/* 線路歷史 */
+function loadOH(){try{const v=JSON.parse(localStorage.getItem('wc26ohist'));return v&&typeof v==='object'?v:{};}catch(e){return {};}}
+let OHIST=loadOH();
+function saveOH(){try{localStorage.setItem('wc26ohist',JSON.stringify(OHIST));}catch(e){}}
+function ohSnap(key,val){ const v=parseFloat(val); if(!isFinite(v))return;
+  const h=OHIST[key]=OHIST[key]||[]; if(h.length&&Math.abs(h[h.length-1].v-v)<1e-9)return;
+  h.push({t:Date.now(),v}); if(h.length>20)h.shift(); saveOH(); }
+function ohArrow(key,modelP){ const h=OHIST[key]; if(!h||h.length<2)return '';
+  const d=h[h.length-1].v-h[0].v; if(Math.abs(d)<1e-9)return '';
+  const dirTxt=d<0?'↘縮':'↗漂';
+  const edge=modelP!=null&&isFinite(modelP)?(modelP*h[h.length-1].v-1):null;
+  const align=(edge!=null&&edge>0&&d<0)?' 市場趨向模型':'';
+  return `<span class="ohm">${dirTxt}${align}</span>`; }
+/* 和局誘因 */
+function loadBoost(){try{const v=JSON.parse(localStorage.getItem('wc26boost'));return v&&typeof v==='object'?v:{};}catch(e){return {};}}
+let BOOST=loadBoost();
+function toggleBoost(id){ if(BOOST[id])delete BOOST[id]; else BOOST[id]=true;
+  try{localStorage.setItem('wc26boost',JSON.stringify(BOOST));}catch(e){} renderDaily(curPage); }
+function drawPact(ref,st){
+  if(ref.kind!=='g'||ref.md!==2) return null;
+  const pi=pairIndexOf(ref.g,ref.i,ref.j);
+  const an=GROUPS[ref.g][ref.i][0], bn=GROUPS[ref.g][ref.j][0];
+  const qD=groupPosProbs(ref.g,st.eff,{pi,o:1});
+  const qa=qD[an][0]+qD[an][1], qb=qD[bn][0]+qD[bn][1];
+  if(qa<0.80||qb<0.80) return null;
+  const qLA=groupPosProbs(ref.g,st.eff,{pi,o:2}); const la=qLA[an][0]+qLA[an][1];
+  const qLB=groupPosProbs(ref.g,st.eff,{pi,o:0}); const lb=qLB[bn][0]+qLB[bn][1];
+  if((qa-la)>=0.20 && (qb-lb)>=0.20) return {qa,qb,riskA:la,riskB:lb};   // 雙方都有實質誘因
+  return null;
+}
+function lineBet(J,kind,side,L){ /* kind 'ou'(side 1=大,-1=細) | 'ah'(side 1=主,-1=客；L=該方讓球線) */
+  const isQ=Math.abs((L*2)%1)>1e-9, legs=isQ?[L-0.25,L+0.25]:[L];
+  let win=0,push=0,lose=0;
+  for(const leg of legs){let w=0,ps=0,ls=0;
+    for(const[x,y,p]of J){ const m = kind==='ou' ? (x+y-leg)*side : ((side===1?(x-y):(y-x))+leg);
+      if(m>1e-9)w+=p; else if(m<-1e-9)ls+=p; else ps+=p; }
+    win+=w/legs.length;push+=ps/legs.length;lose+=ls/legs.length;}
+  return {win,push,lose,fair:win>0?(1-push)/win:99};
+}
+function ahHome(J,L){
+  const isQ=Math.abs((L*2)%1)>1e-9, legs=isQ?[L-0.25,L+0.25]:[L];
+  let win=0,push=0,lose=0;
+  for(const leg of legs){let w=0,ps=0,ls=0;
+    for(const[x,y,p]of J){const m=(x-y)+leg; if(m>1e-9)w+=p;else if(m<-1e-9)ls+=p;else ps+=p;}
+    win+=w/legs.length;push+=ps/legs.length;lose+=ls/legs.length;}
+  return {win,push,lose,fair:win>0?(1-push)/win:99};
+}
+const odds=p=>p>0?Math.min(1/p,99):99;
+function marketBoard(la,lb){
+  const J=buildJoint(la,lb);
+  const pW=_S(J,(x,y)=>x>y),pD=_S(J,(x,y)=>x===y),pL=_S(J,(x,y)=>x<y);
+  return {
+    x12:{home:pW,draw:pD,away:pL},
+    ou25:{over:_S(J,(x,y)=>x+y>2.5)}, ou15:{over:_S(J,(x,y)=>x+y>1.5)}, ou35:{over:_S(J,(x,y)=>x+y>3.5)},
+    btts:_S(J,(x,y)=>x>=1&&y>=1),
+    ah:{m05:ahHome(J,-0.5),m1:ahHome(J,-1),m15:ahHome(J,-1.5),p05:ahHome(J,0.5)},
+    cs:J.slice().sort((a,b)=>b[2]-a[2]).slice(0,6),
+    J,
+    odds,
+  };
+}
+// EV + 1/4 Kelly：modelP vs 莊家十進制賠率
+function evKelly(modelP, bookDec){
+  if(!bookDec||bookDec<=1) return null;
+  const b=bookDec-1, k=Math.max(0,(b*modelP-(1-modelP))/b);
+  return {ev:modelP*bookDec-1, qk:k*0.25};
+}
+
+function applyGroupResult(fx,ga,gb){
+  const row=M.gt[fx.g], a=row[fx.i], b=row[fx.j];
+  a.GF+=ga;a.GA+=gb;b.GF+=gb;b.GA+=ga;
+  if(ga>gb){a.P+=3;a.W++;b.L++;}else if(gb>ga){b.P+=3;b.W++;a.L++;}else{a.P++;b.P++;a.D++;b.D++;}
+  M.results['g'+fx.g+fx.i+fx.j]={ga,gb};
+}
+const KOPS=[[0,1],[2,3],[0,2],[1,3],[0,3],[1,2]];
+function koLabel(m){const rn=m<=88?'32強':m<=96?'16強':m<=100?'8強':m<=102?'4強':m===103?'季軍戰':'決賽';return '淘汰賽 · '+rn+' · M'+m;}
+
+
+/* 由 KNOWN 重建狀態 */
+function buildKnownState(){
+  const eff=formRatings(); const standings={}; let complete=true;
+  for(const g of GL){
+    const st=GROUPS[g].map(x=>({tm:eff[x[0]],P:0,W:0,D:0,L:0,GF:0,GA:0}));
+    for(const [i,j] of KOPS){
+      const kn=KNOWN.g['g'+g+i+j]; if(!kn){complete=false;continue;}
+      st[i].GF+=kn.ga;st[i].GA+=kn.gb;st[j].GF+=kn.gb;st[j].GA+=kn.ga;
+      if(kn.ga>kn.gb){st[i].P+=3;st[i].W++;st[j].L++;}else if(kn.gb>kn.ga){st[j].P+=3;st[j].W++;st[i].L++;}else{st[i].P++;st[j].P++;st[i].D++;st[j].D++;}
+    }
+    st.forEach(s=>s.GD=s.GF-s.GA); st.sort(cmpDisp); standings[g]=st;
+  }
+  let thirdAssign=null;
+  if(complete){ const thirds=GL.map(g=>({...standings[g][2],g})).sort(cmpDisp);
+    thirdAssign=assignThirds(new Set(thirds.slice(0,8).map(x=>x.g))); }
+  const koTeams={}, winners={}, losers={};
+  if(complete){
+    const side=s=>{ if(s.p){const pos=s.p[0]==='1'?0:1,g=s.p[1];return standings[g][pos].tm;} if(s.slot!==undefined)return standings[thirdAssign[s.slot]][2].tm; if(s.w!==undefined)return winners[s.w]; if(s.l!==undefined)return losers[s.l]; };
+    for(const m of KORD){ const A=side(KO[m].a), B=side(KO[m].b);
+      if(A&&B){ koTeams[m]=[A,B]; const kn=KNOWN.k[m];
+        if(kn && kn.a===A.n && kn.b===B.n){ const w=kn.w===A.n?A:B; winners[m]=w; losers[m]=w.n===A.n?B:A; } }
+      else koTeams[m]=null;
+    }
+  }
+  return {standings, thirdAssign, complete, koTeams, winners, eff};
+}
+
+/* 賽程階段 */
+/* 官方賽程（ET）→ 查找表，顯示澳門時間 */
+const GFIX=[["A","墨西哥","南非",6,11,15,0,"墨西哥城"],["A","南韓","捷克",6,11,22,0,"瓜達拉哈拉"],["B","加拿大","波斯尼亞",6,12,15,0,"多倫多"],["D","美國","巴拉圭",6,12,21,0,"洛杉磯"],["B","卡塔爾","瑞士",6,13,15,0,"三藩市灣區"],["C","巴西","摩洛哥",6,13,18,0,"紐約新澤西"],["C","海地","蘇格蘭",6,13,21,0,"波士頓"],["D","澳洲","土耳其",6,14,0,0,"溫哥華"],["E","德國","庫拉索",6,14,13,0,"侯斯頓"],["F","荷蘭","日本",6,14,16,0,"達拉斯"],["E","象牙海岸","厄瓜多爾",6,14,19,0,"費城"],["F","瑞典","突尼西亞",6,14,22,0,"蒙特雷"],["H","西班牙","佛得角",6,15,12,0,"亞特蘭大"],["G","比利時","埃及",6,15,15,0,"西雅圖"],["H","沙特","烏拉圭",6,15,18,0,"邁阿密"],["G","伊朗","紐西蘭",6,15,21,0,"洛杉磯"],["I","法國","塞內加爾",6,16,15,0,"紐約新澤西"],["I","伊拉克","挪威",6,16,18,0,"波士頓"],["J","阿根廷","阿爾及利亞",6,16,21,0,"堪薩斯城"],["J","奧地利","約旦",6,17,0,0,"三藩市灣區"],["K","葡萄牙","剛果DR",6,17,13,0,"侯斯頓"],["L","英格蘭","克羅地亞",6,17,16,0,"達拉斯"],["L","加納","巴拿馬",6,17,19,0,"多倫多"],["K","烏茲別克","哥倫比亞",6,17,22,0,"墨西哥城"],["A","捷克","南非",6,18,12,0,"亞特蘭大"],["B","瑞士","波斯尼亞",6,18,15,0,"洛杉磯"],["B","加拿大","卡塔爾",6,18,18,0,"溫哥華"],["A","墨西哥","南韓",6,18,21,0,"瓜達拉哈拉"],["D","美國","澳洲",6,19,15,0,"西雅圖"],["C","蘇格蘭","摩洛哥",6,19,18,0,"波士頓"],["C","巴西","海地",6,19,20,30,"費城"],["D","土耳其","巴拉圭",6,19,23,0,"三藩市灣區"],["F","荷蘭","瑞典",6,20,13,0,"侯斯頓"],["E","德國","象牙海岸",6,20,16,0,"多倫多"],["E","厄瓜多爾","庫拉索",6,20,20,0,"堪薩斯城"],["F","突尼西亞","日本",6,21,0,0,"蒙特雷"],["H","西班牙","沙特",6,21,12,0,"亞特蘭大"],["G","比利時","伊朗",6,21,15,0,"洛杉磯"],["H","烏拉圭","佛得角",6,21,18,0,"邁阿密"],["G","紐西蘭","埃及",6,21,21,0,"溫哥華"],["J","阿根廷","奧地利",6,22,13,0,"達拉斯"],["I","法國","伊拉克",6,22,17,0,"費城"],["I","挪威","塞內加爾",6,22,20,0,"紐約新澤西"],["J","約旦","阿爾及利亞",6,22,23,0,"三藩市灣區"],["K","葡萄牙","烏茲別克",6,23,13,0,"侯斯頓"],["L","英格蘭","加納",6,23,16,0,"波士頓"],["L","巴拿馬","克羅地亞",6,23,19,0,"多倫多"],["K","哥倫比亞","剛果DR",6,23,22,0,"瓜達拉哈拉"],["B","瑞士","加拿大",6,24,15,0,"溫哥華"],["B","波斯尼亞","卡塔爾",6,24,15,0,"西雅圖"],["C","蘇格蘭","巴西",6,24,18,0,"邁阿密"],["C","摩洛哥","海地",6,24,18,0,"亞特蘭大"],["A","捷克","墨西哥",6,24,21,0,"墨西哥城"],["A","南非","南韓",6,24,21,0,"蒙特雷"],["E","庫拉索","象牙海岸",6,25,16,0,"費城"],["E","厄瓜多爾","德國",6,25,16,0,"紐約新澤西"],["F","日本","瑞典",6,25,19,0,"達拉斯"],["F","突尼西亞","荷蘭",6,25,19,0,"堪薩斯城"],["D","土耳其","美國",6,25,22,0,"洛杉磯"],["D","巴拉圭","澳洲",6,25,22,0,"三藩市灣區"],["I","挪威","法國",6,26,15,0,"波士頓"],["I","塞內加爾","伊拉克",6,26,15,0,"多倫多"],["H","佛得角","沙特",6,26,20,0,"侯斯頓"],["H","烏拉圭","西班牙",6,26,20,0,"瓜達拉哈拉"],["G","埃及","伊朗",6,26,23,0,"西雅圖"],["G","紐西蘭","比利時",6,26,23,0,"溫哥華"],["L","巴拿馬","英格蘭",6,27,17,0,"紐約新澤西"],["L","克羅地亞","加納",6,27,17,0,"費城"],["K","哥倫比亞","葡萄牙",6,27,19,30,"邁阿密"],["K","剛果DR","烏茲別克",6,27,19,30,"亞特蘭大"],["J","阿爾及利亞","奧地利",6,27,22,0,"堪薩斯城"],["J","約旦","阿根廷",6,27,22,0,"達拉斯"]];
+const KFIX=[[73,6,28,15,0,"洛杉磯"],[76,6,29,13,0,"侯斯頓"],[74,6,29,16,30,"波士頓"],[75,6,29,21,0,"蒙特雷"],[78,6,30,13,0,"達拉斯"],[77,6,30,17,0,"紐約新澤西"],[79,6,30,21,0,"墨西哥城"],[80,7,1,12,0,"亞特蘭大"],[82,7,1,16,0,"西雅圖"],[81,7,1,20,0,"三藩市灣區"],[84,7,2,15,0,"洛杉磯"],[83,7,2,19,0,"多倫多"],[85,7,2,23,0,"溫哥華"],[88,7,3,14,0,"達拉斯"],[86,7,3,18,0,"邁阿密"],[87,7,3,21,30,"堪薩斯城"],[90,7,4,13,0,"侯斯頓"],[89,7,4,17,0,"費城"],[91,7,5,16,0,"紐約新澤西"],[92,7,5,20,0,"墨西哥城"],[93,7,6,15,0,"達拉斯"],[94,7,6,20,0,"西雅圖"],[95,7,7,12,0,"亞特蘭大"],[96,7,7,16,0,"溫哥華"],[97,7,9,16,0,"波士頓"],[98,7,10,15,0,"洛杉磯"],[99,7,11,17,0,"邁阿密"],[100,7,11,21,0,"堪薩斯城"],[101,7,14,15,0,"達拉斯"],[102,7,15,15,0,"亞特蘭大"],[103,7,18,17,0,"邁阿密"],[104,7,19,15,0,"紐約新澤西"]];
+const FIX={};
+(function(){for(const e of GFIX){const g=e[0],a=e[1],b=e[2],arr=GROUPS[g];const i=arr.findIndex(x=>x[0]===a),j=arr.findIndex(x=>x[0]===b);if(i<0||j<0){console.error('FIXMAP miss',e);continue;}const lo=Math.min(i,j),hi=Math.max(i,j);FIX['g'+g+lo+hi]={mo:e[3],d:e[4],h:e[5],mi:e[6],c:e[7]};}for(const e of KFIX){FIX['k'+e[0]]={mo:e[1],d:e[2],h:e[3],mi:e[4],c:e[5]};}})();
+function fmtFix(id){const x=FIX[id];if(!x)return '';const inst=Date.UTC(2026,x.mo-1,x.d,x.h+4,x.mi);const t=new Date(inst+8*3600000);const wd='日一二三四五六'[t.getUTCDay()];const p=n=>String(n).padStart(2,'0');return t.getUTCMonth()+1+'月'+t.getUTCDate()+'日('+wd+') '+p(t.getUTCHours())+':'+p(t.getUTCMinutes())+'（澳門）· '+x.c;}
+let curPage=null, PAGES=[];
+function mDate(x){ return new Date(Date.UTC(2026,x.mo-1,x.d,x.h+4,x.mi)+8*3600000); }
+function mdShort(m){ return m<=88?'32強':m<=96?'16強':m<=100?'8強':m<=102?'4強':m===103?'季軍戰':'決賽'; }
+function buildPages(){
+  const map={};
+  const push=(ref,id)=>{ const x=FIX[id]; if(!x) return; const dt=mDate(x); const key=(dt.getUTCMonth()+1)+'/'+dt.getUTCDate();
+    if(!map[key]) map[key]={mo:dt.getUTCMonth()+1, d:dt.getUTCDate(), wd:dt.getUTCDay(), sk:(dt.getUTCMonth()+1)*100+dt.getUTCDate(), items:[]};
+    map[key].items.push({ref, t:dt.getTime()}); };
+  for(const g of GL) for(let md=0;md<3;md++) for(const [i,j] of MD[md]) push({kind:'g',g,i,j,md,id:'g'+g+i+j}, 'g'+g+i+j);
+  for(const m of KORD) push({kind:'k',m,id:'k'+m}, 'k'+m);
+  PAGES=Object.values(map).sort((a,b)=>a.sk-b.sk);
+  PAGES.forEach(p=>p.items.sort((a,b)=>a.t-b.t));
+  const RD=[['小組R1',it=>it.ref.kind==='g'&&it.ref.md===0],['R2',it=>it.ref.kind==='g'&&it.ref.md===1],['R3',it=>it.ref.kind==='g'&&it.ref.md===2],['32強',it=>it.ref.kind==='k'&&it.ref.m<=88],['16強',it=>it.ref.kind==='k'&&it.ref.m>=89&&it.ref.m<=96],['8強',it=>it.ref.kind==='k'&&it.ref.m>=97&&it.ref.m<=100],['4強',it=>it.ref.kind==='k'&&it.ref.m>=101&&it.ref.m<=102],['決賽',it=>it.ref.kind==='k'&&it.ref.m>=103]];
+  ROUNDJUMP=RD.map(r=>({label:r[0],idx:PAGES.findIndex(p=>p.items.some(r[1]))})).filter(x=>x.idx>=0);
+}
+function pagePlayed(p){ return p.items.every(it=> it.ref.kind==='g'?KNOWN.g[it.ref.id]:KNOWN.k[it.ref.m]); }
+function earliestOpenPage(){ for(let i=0;i<PAGES.length;i++) if(!pagePlayed(PAGES[i])) return i; return PAGES.length-1; }
+const fairOdds=p=>p>0?Math.min(1/p,99):99;
+
+/* 莊家賠率持久化 */
+function loadOdds(){ try{const v=JSON.parse(localStorage.getItem('wc26odds')); return v&&typeof v==='object'?v:{};}catch(e){return {};} }
+let ODDS=loadOdds();
+function saveOdds(){ try{localStorage.setItem('wc26odds',JSON.stringify(ODDS));}catch(e){} }
+/* 統一市場定義（盤口板同 EV 排行共用，防 drift） */
+function marketDefs(A,B,bd){ return [
+  {key:'h', lbl:'主勝 '+A.n, p:bd.x12.home},
+  {key:'d', lbl:'和', p:bd.x12.draw},
+  {key:'a', lbl:'客勝 '+B.n, p:bd.x12.away},
+  {key:'o', lbl:'大2.5', p:bd.ou25.over},
+  {key:'u', lbl:'細2.5', p:1-bd.ou25.over},
+  {key:'bt',lbl:'兩隊入球', p:bd.btts},
+]; }
+
+/* 狀態：關注球隊 / 場地修正 / 市場收縮 */
+function loadFollow(){try{const v=JSON.parse(localStorage.getItem('wc26follow'));return new Set(Array.isArray(v)?v:[]);}catch(e){return new Set();}}
+let FOLLOW=loadFollow(), FOLLOWONLY=false, VENUEADJ=false, SHRINK=0, ROUNDJUMP=[];
+function saveFollow(){try{localStorage.setItem('wc26follow',JSON.stringify([...FOLLOW]));}catch(e){}}
+function toggleFollow(n){ if(FOLLOW.has(n))FOLLOW.delete(n); else FOLLOW.add(n); saveFollow(); renderDaily(curPage); }
+function toggleFollowOnly(){ FOLLOWONLY=!FOLLOWONLY; renderDaily(curPage); }
+function toggleVenue(){ VENUEADJ=!VENUEADJ; renderDaily(curPage); }
+function matchInstant(x){ return Date.UTC(2026,x.mo-1,x.d,x.h+4,x.mi); }
+function matchStatus(id){ const x=FIX[id]; if(!x) return ''; const ms=matchInstant(x),now=Date.now(); if(now<ms) return ''; if(now<ms+135*60000) return 'live'; return 'done'; }
+const ALT={'墨西哥城':2200,'瓜達拉哈拉':1560};
+const HOTC={'達拉斯':1,'侯斯頓':1,'堪薩斯城':1,'亞特蘭大':1,'邁阿密':1,'蒙特雷':1};
+function venueFactor(id){ const x=FIX[id]; if(!x) return 1; let f=1; const a=ALT[x.c]||0; if(a>=2000)f*=0.93; else if(a>=1500)f*=0.96; if(HOTC[x.c]&&x.h>=12&&x.h<=17)f*=0.96; return f; }
+function todayPageIdx(){ const mac=new Date(Date.now()+8*3600000); const key=(mac.getUTCMonth()+1)*100+mac.getUTCDate(); return PAGES.findIndex(p=>p.sk===key); }
+function defaultIdx(){ const t=todayPageIdx(); return t>=0?t:earliestOpenPage(); }
+function refTeams(ref,st){ if(ref.kind==='g') return [GROUPS[ref.g][ref.i][0],GROUPS[ref.g][ref.j][0]]; const t=st.koTeams[ref.m]; return t?[t[0].n,t[1].n]:[]; }
+
+let ANALCTX={}, BOARDCTX={};
+const NEXTM={};
+(function(){ for(const q of KORD){ for(const sd of ['a','b']){ const o=KO[q][sd];
+  if(o&&o.w!==undefined) NEXTM[o.w]={q, other:KO[q][sd==='a'?'b':'a']}; } }})();
+function advChance(t0,t1){ const an=analyzeT(t0,t1); return an.pW+an.pD*(0.5+(eloP(t0.r,t1.r)-0.5)*0.2); }
+function nextOppHTML(m, st){
+  const nx=NEXTM[m]; if(!nx) return '';
+  const sde=nx.other; let txt='待定';
+  const res=(mm)=>{ if(st.winners&&st.winners[mm]) return st.winners[mm].n;
+    const t=st.koTeams&&st.koTeams[mm];
+    if(t){ const p=advChance(t[0],t[1]); return 'M'+mm+' 勝方（'+t[0].n+' '+(p*100).toFixed(0)+'% / '+t[1].n+' '+((1-p)*100).toFixed(0)+'%）'; }
+    return 'M'+mm+' 勝方（對陣待定）'; };
+  if(sde.w!==undefined) txt=res(sde.w);
+  else if(sde.l!==undefined) txt='M'+sde.l+' 負方';
+  else if(sde.p||sde.slot!==undefined) txt='小組賽出線隊伍';
+  return `<div class="gsec-h" style="margin:8px 0 2px">晉級路徑</div><div class="mut" style="font-size:12px">本場勝方下一場（M${nx.q} · ${mdShort(nx.q)}）對：${txt}</div>`;
+}
+function pairIndexOf(g,i,j){ const pairs=[[0,1],[2,3],[0,2],[1,3],[0,3],[1,2]]; return pairs.findIndex(p=>p[0]===i&&p[1]===j); }
+function formStr(name){
+  const seq=[];
+  for(let r=0;r<3;r++) for(const g of GL) for(const [i,j] of MD[r]){ const id='g'+g+i+j, kn=KNOWN.g[id]; if(!kn)continue;
+    const a=GROUPS[g][i][0], b=GROUPS[g][j][0];
+    if(a===name) seq.push({res:kn.ga>kn.gb?'W':kn.ga<kn.gb?'L':'D', s:kn.ga+'-'+kn.gb});
+    else if(b===name) seq.push({res:kn.gb>kn.ga?'W':kn.gb<kn.ga?'L':'D', s:kn.gb+'-'+kn.ga}); }
+  for(const m of KORD){ const kn=KNOWN.k[m]; if(!kn||!kn.a)continue;
+    if(kn.a===name) seq.push({res:kn.w===name?'W':'L', s:kn.ga+'-'+kn.gb});
+    else if(kn.b===name) seq.push({res:kn.w===name?'W':'L', s:kn.gb+'-'+kn.ga}); }
+  return seq.slice(-3);
+}
+function restDays(name, id, st){
+  const x=FIX[id]; if(!x) return null; const tNow=matchInstant(x); let prev=null;
+  for(const fid in FIX){ const t=matchInstant(FIX[fid]); if(t>=tNow) continue;
+    let plays=false;
+    if(fid[0]==='g'){ const g=fid[1],i=+fid[2],j=+fid[3]; plays=(GROUPS[g][i][0]===name||GROUPS[g][j][0]===name); }
+    else { const mm=+fid.slice(1); const t2=st.koTeams[mm]; plays=!!(t2&&(t2[0].n===name||t2[1].n===name)); }
+    if(plays && (prev===null||t>prev)) prev=t; }
+  return prev===null?null:Math.round((tNow-prev)/86400000);
+}
+/* ---- 賽後結算 ---- */
+function settleLine(kind,side,L,ga,gb,book){ /* 回傳每注1單位損益（含四分一球半贏半輸） */
+  const b=parseFloat(book); if(!isFinite(b)||b<=1) return null;
+  const isQ=Math.abs((L*2)%1)>1e-9, legs=isQ?[L-0.25,L+0.25]:[L];
+  let pl=0, parts=[];
+  for(const leg of legs){
+    const m = kind==='ou' ? (ga+gb-leg)*side : ((side===1?ga-gb:gb-ga)+leg);
+    if(m>1e-9){ pl+=(b-1)/legs.length; parts.push('贏'); }
+    else if(m<-1e-9){ pl+=-1/legs.length; parts.push('輸'); }
+    else parts.push('和');
+  }
+  const res = parts.length===1?parts[0] : (parts.join('')==='贏和'||parts.join('')==='和贏'?'半贏':parts.join('')==='輸和'||parts.join('')==='和輸'?'半輸':parts[0]===parts[1]?parts[0]:'半');
+  return {pl,res};
+}
+function settleSimple(key,ga,gb,book){ /* 1X2 / 大細2.5 / BTTS */
+  const b=parseFloat(book); if(!isFinite(b)||b<=1) return null;
+  let win;
+  if(key==='h')win=ga>gb; else if(key==='d')win=ga===gb; else if(key==='a')win=ga<gb;
+  else if(key==='o')win=ga+gb>2.5; else if(key==='u')win=ga+gb<2.5;
+  else if(key==='bt')win=ga>=1&&gb>=1; else return null;
+  return {pl:win?(b-1):-1,res:win?'贏':'輸'};
+}
+function settleMatchOdds(id,ga,gb,anPre,bdPre){ /* 結算本場所有已貼價盤；回傳 rows + 合計 */
+  const anch=anchorFor(id);
+  const J = anch?anch.bd.J:bdPre.J;
+  const defs=marketDefs({n:''},{n:''},anch?anch.bd:bdPre);
+  const rows=[]; let tot=0,n=0;
+  const lblMap={h:'主勝',d:'和',a:'客勝',o:'大2.5',u:'細2.5',bt:'兩隊入球'};
+  for(const k of ['h','d','a','o','u','bt']){
+    const bk=ODDS[id+'_'+k]; if(!bk) continue;
+    const st=settleSimple(k,ga,gb,bk); if(!st) continue;
+    const def=defs.find(x=>x.key===k);
+    const ev=def?def.p*parseFloat(bk)-1:null;
+    rows.push({lbl:lblMap[k],bk:parseFloat(bk),res:st.res,pl:st.pl,ev,anch:!!anch&&(k==='h'||k==='d'||k==='a')?'基準':null});
+    tot+=st.pl;n++;
+  }
+  const cl=parseFloat(ODDS[id+'_coul']), cs=parseInt(ODDS[id+'_cous']||'1'), cb=ODDS[id+'_coub'];
+  if(isFinite(cl)&&cb){ const st=settleLine('ou',cs,cl,ga,gb,cb);
+    if(st){ const q=lineBet(J,'ou',cs,cl); rows.push({lbl:(cs===1?'大':'細')+cl,bk:parseFloat(cb),res:st.res,pl:st.pl,ev:q.win*(parseFloat(cb)-1)-q.lose}); tot+=st.pl;n++; } }
+  const al=parseFloat(ODDS[id+'_cahl']), as_=parseInt(ODDS[id+'_cahs']||'1'), ab=ODDS[id+'_cahb'];
+  if(isFinite(al)&&ab){ const st=settleLine('ah',as_,al,ga,gb,ab);
+    if(st){ const q=lineBet(J,'ah',as_,al); rows.push({lbl:(as_===1?'主':'客')+'讓'+al,bk:parseFloat(ab),res:st.res,pl:st.pl,ev:q.win*(parseFloat(ab)-1)-q.lose}); tot+=st.pl;n++; } }
+  return {rows,tot,n,anch:!!anch};
+}
+function postSummaryHTML(ref,id,A,B,known,anPre,bdPre){
+  const ga=known.ga, gb=known.gb;
+  const act=ga>gb?0:(ga===gb?1:2);
+  const pW=known.pW!==undefined?known.pW:anPre.pW, pD=known.pW!==undefined?known.pD:anPre.pD, pL=known.pW!==undefined?known.pL:anPre.pL;
+  const ps=[pW,pD,pL], top=ps.indexOf(Math.max(...ps));
+  const hit=top===act;
+  const rps=computeRPS(pW,pD,pL,ga,gb);
+  // 實際比數喺賽前分佈嘅機率＋排名
+  const sorted=bdPre.J.slice().sort((x,y)=>y[2]-x[2]);
+  const idx=sorted.findIndex(s=>s[0]===Math.min(ga,7)&&s[1]===Math.min(gb,7));
+  const pScore=idx>=0?sorted[idx][2]:0;
+  const outLbl=['主勝','和','客勝'];
+  let html=`<div class="gsec-h" style="margin:2px 0 4px">📊 預測對照</div>
+  <table class="ptbl an-tbl"><tr><th class="l">項目</th><th class="l">賽前</th><th class="l">實際</th><th class="l">評</th></tr>
+  <tr><td class="l">勝負</td><td class="l">${outLbl[top]} ${(ps[top]*100).toFixed(0)}%（首選）</td><td class="l">${outLbl[act]} ${ga}-${gb}</td><td class="l">${hit?'<span class="qok">✓ 命中</span>':'<span class="qno">✗ 走</span>'} · RPS ${rps.toFixed(3)} ${rps<0.222?'<small class="qok">優於基準</small>':'<small class="qno">差過基準</small>'}</td></tr>
+  <tr><td class="l">比數</td><td class="l">最可能 ${anPre.top[0][0]}-${anPre.top[0][1]}（${(anPre.top[0][2]*100).toFixed(0)}%）</td><td class="l">${ga}-${gb}</td><td class="l">賽前機率 ${(pScore*100).toFixed(1)}%${idx>=0?'（第 '+(idx+1)+' 可能）':''}</td></tr>
+  <tr><td class="l">入球</td><td class="l">xG ${anPre.la.toFixed(2)} — ${anPre.lb.toFixed(2)}</td><td class="l">${ga} — ${gb}</td><td class="l">殘差 ${(ga-anPre.la)>=0?'+':''}${(ga-anPre.la).toFixed(2)} / ${(gb-anPre.lb)>=0?'+':''}${(gb-anPre.lb).toFixed(2)}</td></tr></table>`;
+  const st=settleMatchOdds(id,ga,gb,anPre,bdPre);
+  if(st.n){
+    html+=`<div class="gsec-h" style="margin:10px 0 4px">💰 盤口結算（每注 1 單位 · 用你最後貼嘅價）</div>
+    <table class="ptbl an-tbl"><tr><th class="l">盤</th><th>價</th><th>賽前訊號</th><th>結果</th><th>損益</th></tr>`;
+    for(const r of st.rows){
+      const evTxt=r.anch?'<span class="mut">基準</span>':(r.ev!=null?((r.ev>=0?'+':'')+(r.ev*100).toFixed(1)+'%'):'–');
+      const evRight=r.ev!=null&&!r.anch?((r.ev>0&&r.pl>0)||(r.ev<=0&&r.pl<=0)?' ✓':' ✗'):'';
+      html+=`<tr><td class="l">${r.lbl}</td><td>${r.bk.toFixed(2)}</td><td>${evTxt}${evRight}</td><td>${r.res}</td><td class="${r.pl>0?'pos':r.pl<0?'neg':''}">${r.pl>=0?'+':''}${r.pl.toFixed(2)}</td></tr>`;
+    }
+    html+=`<tr><td class="l" colspan="4"><b>合計（${st.n} 盤）</b></td><td class="${st.tot>0?'pos':st.tot<0?'neg':''}"><b>${st.tot>=0?'+':''}${st.tot.toFixed(2)}</b></td></tr></table>`;
+  } else html+=`<div class="note">本場未貼過莊家價，冇盤口可結算。</div>`;
+  if(ref.kind==='k') html+=`<div class="note">⚠ KO 場：結算以你輸入嘅比數為準；如比數含加時，大細／讓球結算可能同莊家 90 分鐘規則唔同。</div>`;
+  return `<div class="an-panel">${html}</div>`;
+}
+function toggleSettle(id){ const el=document.getElementById('se_'+id); if(!el) return;
+  if(el.classList.contains('hide') && !el.innerHTML){ const c=ANALCTX[id]; const b=BOARDCTX[id];
+    if(c&&b){ const known=c.ref.kind==='g'?KNOWN.g[id]:KNOWN.k[c.ref.m];
+      if(known) el.innerHTML=postSummaryHTML(c.ref,id,b.A,b.B,known,b.an,b.bdM); } }
+  el.classList.toggle('hide'); }
+function analysisHTML(ref,id,A,B,st){
+  const baseT=buildTeams();
+  const rowT=(T)=>{
+    const b=baseT[T.n].r+(HOST[T.n]||0), dR=T.r-b;
+    const fseq=formStr(T.n), fs=fseq.length?fseq.map(x=>`<span class="fchip f${x.res}">${x.res} ${x.s}</span>`).join(''):'<span class="mut">未有賽事紀錄</span>';
+    const rd=restDays(T.n,id,st);
+    const hp=HPRIOR[T.n], x=hp?hp.x:0, dA=T.att-x, dD=T.def-x;
+    const hist=hp?`20年 ${hp.m} 場 勝率 ${hp.w}% 場均 ${hp.gf} 入 ${hp.ga} 失 · 節奏先驗 ${x>=0?'+':''}${(x*100).toFixed(0)}%${Math.abs(dA)>=0.005||Math.abs(dD)>=0.005?` · 賽事學習 攻${dA>=0?'+':''}${(dA*100).toFixed(0)}%/防${dD>=0?'+':''}${(dD*100).toFixed(0)}%`:''}`:'無歷史資料';
+    return `<div class="an-team"><b>${T.n}</b>　${fs}<div class="mut" style="font-size:12px;margin-top:2px">實力 ${Math.round(T.r)}（賽事中 ${dR>=0.5?'+'+dR.toFixed(0):dR<=-0.5?dR.toFixed(0):'±0'}）· 休息 ${rd===null?'首場':rd+' 日'}<br>${hist}</div></div>`;
+  };
+  let qual='';
+  if(ref.kind==='g'){
+    const pi=pairIndexOf(ref.g,ref.i,ref.j);
+    const cells=[0,1,2].map(o=>{ const q=groupPosProbs(ref.g,st.eff,{pi,o});
+      const qa=(q[A.n][0]+q[A.n][1])*100, qb=(q[B.n][0]+q[B.n][1])*100;
+      return `<tr><td>${o===0?A.n+' 勝':o===1?'和':B.n+' 勝'}</td><td><b>${qa.toFixed(0)}%</b></td><td><b>${qb.toFixed(0)}%</b></td></tr>`; }).join('');
+    qual=`<div class="gsec-h" style="margin:8px 0 4px">出線影響（首二名解析機率，條件化本場結果）</div>
+      <div style="overflow-x:auto"><table class="ptbl"><tr><th class="l">本場結果</th><th>${A.n} 出線</th><th>${B.n} 出線</th></tr>${cells}</table></div>`;
+  }
+  const nxt = ref.kind==='k' ? nextOppHTML(ref.m, st) : '';
+  return `<div class="an-panel">${rowT(A)}${rowT(B)}${qual}${nxt}</div>`;
+}
+function toggleAnal(id){ const el=document.getElementById('an_'+id); if(!el) return;
+  if(el.classList.contains('hide') && !el.innerHTML){ const c=ANALCTX[id]; if(c) el.innerHTML=analysisHTML(c.ref,id,c.A,c.B,c.st); }
+  el.classList.toggle('hide'); }
+function loadBank(){ try{const v=parseFloat(localStorage.getItem('wc26bank')); return isFinite(v)&&v>0?v:0;}catch(e){return 0;} }
+let BANK=loadBank();
+function setBank(v){ BANK=parseFloat(v)||0; try{localStorage.setItem('wc26bank',String(BANK));}catch(e){} renderDaily(curPage); }
+function fmtCD(ms){ const h=Math.floor(ms/3600e3), m=Math.floor(ms%3600e3/60e3);
+  return h>=24?Math.floor(h/24)+'日'+(h%24)+'h':(h>0?h+'h':'')+m+'m'; }
+function dailyTasks(pg, idx, st, now){
+  now=now||Date.now();
+  let pend=0, pendIdx=null;
+  for(let k=0;k<PAGES.length;k++){
+    for(const it of PAGES[k].items){ const ref=it.ref, id=ref.id;
+      const x=FIX[id]; if(!x) continue;
+      if(matchInstant(x)+2.2*3600e3>now) continue;
+      if(ref.kind==='k' && !st.koTeams[ref.m] && !KNOWN.k[ref.m]) continue;
+      const kn=ref.kind==='g'?KNOWN.g[id]:KNOWN.k[ref.m];
+      if(!kn||!kn.locked){ pend++; if(pendIdx===null)pendIdx=k; } } }
+  let nextT=null;
+  for(const it of pg.items){ const x=FIX[it.ref.id]; if(!x)continue; const t=matchInstant(x); if(t>now&&(nextT===null||t<nextT))nextT=t; }
+  let pacts=0; for(const it of pg.items){ try{ if(drawPact(it.ref,st)) pacts++; }catch(e){} }
+  let unpriced=0,total=0;
+  for(const it of pg.items){ const ref=it.ref,id=ref.id;
+    const kn=ref.kind==='g'?KNOWN.g[id]:KNOWN.k[ref.m]; if(kn&&kn.locked)continue;
+    if(ref.kind==='k'&&!st.koTeams[ref.m])continue;
+    total++;
+    if(!(ODDS[id+'_h']&&ODDS[id+'_d']&&ODDS[id+'_a'])) unpriced++; }
+  const chips=[];
+  if(pend>0) chips.push(`<button class="task warn" onclick="renderDaily(${pendIdx})">📝 ${pend} 場已完未入賽果 →</button>`);
+  if(nextT!==null) chips.push(`<span class="task">⏱ 本頁首場 ${fmtCD(nextT-now)} 後開賽</span>`);
+  if(pacts>0) chips.push(`<span class="task gold">⚠ 雙和齊出線 ${pacts} 場</span>`);
+  if(total>0&&unpriced>0) chips.push(`<span class="task">💰 ${unpriced}/${total} 場未貼 1X2（貼齊升級錨定）</span>`);
+  return chips.length?`<div class="taskbar">${chips.join('')}</div>`:'';
+}
+function dailyEVTop(pg,st){
+  const rows=[];
+  for(const it of pg.items){ const ref=it.ref, id=ref.id;
+    let A,B,known;
+    if(ref.kind==='g'){ A=st.eff[GROUPS[ref.g][ref.i][0]]; B=st.eff[GROUPS[ref.g][ref.j][0]]; known=KNOWN.g[id]; }
+    else { const t=st.koTeams[ref.m]; if(!t) continue; A=t[0]; B=t[1]; known=KNOWN.k[ref.m]; }
+    if(known&&known.locked) continue;
+    const gs=VENUEADJ?venueFactor(id):1;
+    const an=analyzeT(A,B,gs), bd=marketBoard(an.la,an.lb);
+    const anch=anchorFor(id);
+    const ctx={A,B,an,anch};
+    const [Jlo,Jhi]=bandJoints(ctx);
+    const bdE=anch?anch.bd:bd;
+    for(const m of marketDefs(A,B,bdE)){
+      const saved=ODDS[id+'_'+m.key]; if(!saved) continue;
+      const is1x2=(m.key==='h'||m.key==='d'||m.key==='a');
+      if(anch&&is1x2) continue;                       // 錨定基準，不評
+      const md2=marketDefs(A,B,marketBoardFromJ(Jlo)).find(x=>x.key===m.key);
+      const md3=marketDefs(A,B,marketBoardFromJ(Jhi)).find(x=>x.key===m.key);
+      const r=evBandTxt(m.p, md2?md2.p:m.p, md3?md3.p:m.p, saved); if(!r) continue;
+      rows.push({match:A.n+' v '+B.n, lbl:m.lbl, ev:r.ev, lo:r.lo, k:r.k,
+        book:parseFloat(saved), fair:fairOdds(m.p), tier:anch?1:(is1x2?3:2)});
+    } }
+  if(!rows.length&&!BANK) return '';
+  rows.sort((a,b)=> (a.tier-b.tier) || (b.lo-a.lo) || (b.ev-a.ev));
+  const tierTag=t=>t===1?'<i class="tier ok">✓錨定</i>':t===2?'<i class="tier">模型·衍生</i>':'<i class="tier warn">⚠模型1X2</i>';
+  const top=rows.slice(0,4).map((r,i)=>`<div class="evt-row"><span class="evt-rank">${i+1}</span><span class="evt-m">${r.match}<small> · ${r.lbl}</small> ${tierTag(r.tier)}</span><span class="evt-o">莊 ${r.book.toFixed(2)} / 公平 ${r.fair.toFixed(2)}</span><span class="evt-ev ${r.lo>0?'pos':(r.ev>0?'mid':'neg')}">${r.ev>=0?'+':''}${(r.ev*100).toFixed(1)}%<small>（下界 ${r.lo>=0?'+':''}${(r.lo*100).toFixed(1)}%）K${(r.k*100).toFixed(1)}%</small></span></div>`).join('');
+  let bankHTML=`<div class="bankrow">本金 <input class="bo" id="bankIn" value="${BANK||''}" placeholder="如 1000" onchange="setBank(this.value)">`;
+  if(BANK>0){
+    const act=rows.filter(r=>r.tier<3&&r.lo>0);
+    const stake=act.reduce((sum,r)=>sum+r.k*BANK,0);
+    const pct=stake/BANK*100;
+    const matches=new Set(act.map(r=>r.match));
+    bankHTML+=`　今日可操作訊號 ${act.length} 個 · 合計建議 ${stake.toFixed(0)}（佔 <b style="color:${pct>5?'var(--red)':'var(--green)'}">${pct.toFixed(1)}%</b>）${act.length>matches.size?' · ⚠ 含同場多注（相關，勿當獨立）':''}${pct>5?' · ⚠ 超 5% 上限，建議按比例縮':''}`;
+  }
+  bankHTML+='</div>';
+  return `<div class="evtop"><div class="cup-hd">💰 今日訊號（下界>0 先綠；錨定>模型；1X2 模型訊號僅參考）</div>${top}${bankHTML}</div>`;
+}
+function renderDaily(idx){
+  applyStyle();
+  const wrap=$("#manualWrap"); if(!wrap) return;
+  if(!PAGES.length) buildPages();
+  const st=buildKnownState();
+  if(idx==null) idx=(curPage!=null&&curPage<PAGES.length)?curPage:defaultIdx();
+  idx=Math.max(0,Math.min(PAGES.length-1,idx));
+  curPage=idx; ANALCTX={}; BOARDCTX={};
+  const pg=PAGES[idx], wd='日一二三四五六'[pg.wd];
+  let curRound=-1; for(let i=0;i<ROUNDJUMP.length;i++) if(idx>=ROUNDJUMP[i].idx) curRound=i;
+  const rbar=`<div class="roundbar">${ROUNDJUMP.map((r,i)=>`<button class="rbtn ${i===curRound?'on':''}" onclick="renderDaily(${r.idx})">${r.label}</button>`).join("")}</div>`;
+  const bar=`<div class="stagebar">${PAGES.map((p,k)=>{
+    const done=pagePlayed(p);
+    return `<button class="stbtn ${k===idx?'on':''} ${done?'done':''}" onclick="renderDaily(${k})">${p.mo}/${p.d}${done?' ✓':''}</button>`;
+  }).join("")}</div>`;
+  const ti=todayPageIdx();
+  const hd=`<div class="stagehd"><span class="stagettl">${pg.mo}月${pg.d}日（${wd}）</span><span class="stagedt">第 ${idx+1}/${PAGES.length} 比賽日 · 澳門</span></div>
+  <div class="stageacts">
+    <button class="mini" onclick="renderDaily(${idx-1})"${idx===0?' disabled':''}>← 前一日</button>
+    <button class="mini" onclick="renderDaily(${idx+1})"${idx===PAGES.length-1?' disabled':''}>後一日 →</button>
+    <button class="mini" onclick="renderDaily(${ti})"${ti<0?' disabled':''}>📅 今日</button>
+    <button class="mini sim" onclick="simDay()">🎲 模擬本日</button>
+    <button class="mini ${FOLLOWONLY?'sim':''}" onclick="toggleFollowOnly()">★ ${FOLLOWONLY?'全部':'只睇關注'}</button>
+    <button class="mini ${VENUEADJ?'sim':''}" onclick="toggleVenue()">⛰ 場地修正${VENUEADJ?'：開':''}</button>
+  </div>`;
+  let items=pg.items;
+  if(FOLLOWONLY) items=items.filter(it=>refTeams(it.ref,st).some(n=>FOLLOW.has(n)));
+  const tasks=dailyTasks(pg,idx,st);
+  const evtop=dailyEVTop(pg,st);
+  const body = items.length ? items.map(it=>matchCard(it.ref, st)).join("")
+    : `<div class="note">本日無關注球隊場次（共 ${pg.items.length} 場）。撳「全部」睇返晒，或喺隊名側邊 ☆ 加關注。</div>`;
+  wrap.innerHTML=`<div class="navstick">${rbar}${bar}</div>`+hd+tasks+evtop+body;
+  const onb=wrap.querySelector('.stbtn.on'); if(onb){try{onb.scrollIntoView({inline:'center',block:'nearest'});}catch(e){}}
+}
+function matchCard(ref, st){
+  let A,B,known,id=ref.id;
+  if(ref.kind==='g'){ A=st.eff[GROUPS[ref.g][ref.i][0]]; B=st.eff[GROUPS[ref.g][ref.j][0]]; known=KNOWN.g[id]; }
+  else { const t=st.koTeams[ref.m]; if(!t) return `<div class="mc pend"><div class="pendrow"><span class="ttl">${koLabel(ref.m)}</span><span class="pendtxt">對陣待定（要先完成上游賽果）</span></div><div class="mtime">🕒 ${fmtFix('k'+ref.m)}</div></div>`;
+    A=t[0]; B=t[1]; known=KNOWN.k[ref.m]; }
+  const gs = VENUEADJ?venueFactor(id):1;
+  /* 賽前視角：已記賽果嘅場，剔除本場自身影響重算（預測定格，唔被自己賽果污染） */
+  if(known){ const bak=known;
+    if(ref.kind==='g') delete KNOWN.g[id]; else delete KNOWN.k[ref.m];
+    const eff2=formRatings();
+    if(eff2[A.n]) A=eff2[A.n]; if(eff2[B.n]) B=eff2[B.n];
+    if(ref.kind==='g') KNOWN.g[id]=bak; else KNOWN.k[ref.m]=bak;
+  }
+  const an=analyzeT(A,B,gs), bd=marketBoard(an.la,an.lb), o=fairOdds;
+  const inA=known?known.ga:'', inB=known?known.gb:'';
+  const locked=known?.locked; const simmed=known&&!locked;
+  const pW=an.pW*100, pD=an.pD*100, pL=an.pL*100;
+  const tagTxt = ref.kind==='g' ? `${ref.g} 組 · 第 ${(ref.md??0)+1} 輪` : `${mdShort(ref.m)} · M${ref.m}`;
+  const fA=FOLLOW.has(A.n), fB=FOLLOW.has(B.n);
+  const stt=matchStatus(id), sttHTML = stt==='live'?'<span class="stt live">● 進行中</span>':(stt==='done'&&!known?'<span class="stt done">已完場 · 待入</span>':'');
+  const star=n=>`<span class="star ${FOLLOW.has(n)?'on':''}" onclick="event.stopPropagation();toggleFollow('${n}')">${FOLLOW.has(n)?'★':'☆'}</span>`;
+  const scoreStr=known?`${known.ga}-${known.gb}${ref.kind==='k'?' · '+known.w+(known.pen?'(P)':''):''}`:'';
+  const pact=drawPact(ref,st);
+  let bdShow=bd, boostNote='';
+  if(pact&&BOOST[id]&&!ODDS[id+'_h']){ const mix=(p,t)=>0.75*p+0.25*t;
+    bdShow={...bd, x12:{home:mix(bd.x12.home,0),draw:mix(bd.x12.draw,1),away:mix(bd.x12.away,0)}};
+    boostNote=' <i class="tier">+和局誘因25%</i>'; }
+  ANALCTX[id]={ref,A,B,st};
+  BOARDCTX[id]={J:bd.J, A, B, bdM:bd, an, gs, anch:anchorFor(id)};
+  return `<div class="mc${(fA||fB)?' foll':''}">
+    ${(()=>{ const x=FIX[id]; let extra='';
+      if(!known&&x){ const dt=matchInstant(x)-Date.now(); if(dt>0&&dt<48*3600e3) extra+=`<span class="stt cd">⏱ ${fmtCD(dt)}</span>`; }
+      if(!locked){ if(ODDS[id+'_h']&&ODDS[id+'_d']&&ODDS[id+'_a']) extra+='<span class="stt priced">💰 已錨定</span>';
+        else if(['h','d','a','o','u','bt','coub','cahb'].some(k=>ODDS[id+'_'+k])) extra+='<span class="stt priced2">💰 已貼價</span>'; }
+      return `<div class="mctag">${tagTxt}${sttHTML}${extra}${pact?`<span class="stt pact">⚠ 雙和齊出線</span>`:''}</div>`; })()}
+    <div class="mteams" style="margin:6px 0 2px">
+      <div class="tm"><div class="nmln">${star(A.n)}${fl(A)}${A.n}</div><div class="rt">實力 ${Math.round(A.r)}</div></div>
+      <div class="vs">VS</div>
+      <div class="tm"><div class="nmln">${B.n}${fl(B)}${star(B.n)}</div><div class="rt">實力 ${Math.round(B.r)}</div></div>
+    </div>
+    <div class="mtime">🕒 ${fmtFix(id)}${gs!==1?' · ⛰修正':''}</div>
+    ${(()=>{ const bb=pact&&BOOST[id]; const dW=bb?bdShow.x12.home*100:pW, dD=bb?bdShow.x12.draw*100:pD, dL=bb?bdShow.x12.away*100:pL;
+      return `<div class="wdl">
+      <span class="w" style="width:${dW}%">${dW>9?A.n+' '+Math.round(dW)+'%':''}</span>
+      <span class="d" style="width:${dD}%">${dD>9?'和 '+Math.round(dD)+'%':''}</span>
+      <span class="l" style="width:${dL}%">${dL>9?B.n+' '+Math.round(dL)+'%':''}</span>
+    </div>${bb?'<div class="mut" style="font-family:var(--cond);font-size:10.5px;text-align:center">已套用和局誘因 +25%（heuristic，僅影響 W/D/L 顯示）</div>':''}`; })()}
+    <div class="xg">期望入球 <b>${an.la.toFixed(2)}</b> — <b>${an.lb.toFixed(2)}</b>　·　預測 <b>${an.top[0][0]}-${an.top[0][1]}</b></div>
+    <div class="scos">${an.top.map(s=>`<span class="sco"><b>${s[0]}-${s[1]}</b> ${(s[2]*100).toFixed(0)}%</span>`).join("")}</div>
+    ${locked?`
+    <div class="mc-mid">
+      <span class="done-badge lk">🔒 ${scoreStr}</span>
+      <button class="mini sim" onclick="toggleSettle('${id}')">📊 結算▾</button>
+      <button class="mini danger-arm" data-armed="" onclick="armUnlock(this,'${id}')">✏ 修改</button>
+      <button class="mini" onclick="toggleAnal('${id}')">分析▾</button>
+      <button class="mini" onclick="toggleBoard('${id}')">盤口參考▾</button>
+    </div>`:`
+    <div class="mc-mid">
+      <input class="mc-in" id="in_${id}_a" type="number" min="0" placeholder="–" value="${inA}"><span>:</span>
+      <input class="mc-in" id="in_${id}_b" type="number" min="0" placeholder="–" value="${inB}">
+      ${ref.kind==='g'?`<button class="mini" onclick="saveG('${id}')">儲存</button><button class="mini primary" onclick="confirmG('${id}')">確定 🔒</button>`:`<button class="mini primary" onclick="saveK(${ref.m},'A')">${A.n}晉級 🔒</button><button class="mini primary" onclick="saveK(${ref.m},'B')">${B.n}晉級 🔒</button>`}
+      <button class="mini sim" onclick="simMatch('${id}')">${simmed?'🎲 重模擬':'🎲 模擬'}</button>
+      ${simmed?`<button class="mini" onclick="clearMatch('${id}')">清</button>`:''}
+      <button class="mini" onclick="toggleAnal('${id}')">分析▾</button>
+      <button class="mini" onclick="toggleBoard('${id}')">盤口參考▾</button>
+      ${pact?`<button class="mini ${BOOST[id]?'sim':''}" onclick="toggleBoost('${id}')">和局誘因${BOOST[id]?'✓':''}</button>`:''}
+      ${simmed?`<span class="done-badge sm">🔓 ${scoreStr}</span>`:''}
+    </div>`}
+    <div class="mc-board hide" id="se_${id}"></div>
+    <div class="mc-board hide" id="an_${id}"></div>
+    <div class="mc-board hide" id="bd_${id}">${boardHTML(id,A,B,bd)}</div>
+  </div>`;
+}
+function boardHTML(id,A,B,bd){
+  const o=fairOdds, ctx=BOARDCTX[id]||{A,B,an:{la:bd.J?undefined:0}};
+  const anch=ctx.anch||null;
+  const bdE=anch?anch.bd:bd;                              // 衍生盤定價來源
+  const [Jlo,Jhi]=bandJoints({...ctx,A,B,an:ctx.an||{la:0,lb:0}});
+  const bdLo=null;
+  const probOf=(J,key)=>{ const md=marketDefs(A,B,marketBoardFromJ(J)); const f=md.find(x=>x.key===key); return f?f.p:null; };
+  const srcBadge = anch
+    ? `<div class="src-badge anch">定價來源：市場錨定（水位 ${((anch.dv.ovr-1)*100).toFixed(1)}%）— 1X2 為基準不評 EV，衍生盤 EV = 市場自身一致性訊號</div>`
+    : `<div class="src-badge mdl">定價來源：純模型 — 貼齊 1X2 三個價即升級「市場錨定」；1X2 EV 僅供參考</div>`;
+  const row=(lbl,p,key)=>{ const saved=ODDS[id+'_'+key]||'';
+    const is1x2=(key==='h'||key==='d'||key==='a');
+    let evHTML='';
+    if(saved){
+      if(anch&&is1x2){ evHTML=`<span class="bev mut2">基準</span>`; }
+      else{
+        const pLo=probOf(Jlo,key), pHi=probOf(Jhi,key);
+        const r=evBandTxt(p, pLo==null?p:pLo, pHi==null?p:pHi, saved);
+        if(r) evHTML=`<span class="${r.cls}" id="ev_${id}_${key}">${r.txt}${(!anch&&is1x2)?' <i class="tier">⚠模型</i>':''}</span>`;
+      }
+    } else evHTML=`<span class="bev" id="ev_${id}_${key}"></span>`;
+    return `<div class="brow"><span class="bk">${lbl}${ohArrow(id+'_'+key,p)}</span><span class="bf">${o(p).toFixed(2)}</span>
+    <input class="bo" id="bk_${id}_${key}" inputmode="decimal" placeholder="莊家賠率" value="${saved}" onchange="boardCommit('${id}')">
+    ${evHTML}</div>`; };
+  return `<div class="board">
+    ${srcBadge}
+    ${marketDefs(A,B,bdE).map(m=>row(m.lbl,m.p,m.key)).join('')}
+    ${(()=>{ const cv=k=>ODDS[id+'_'+k]||'';
+      const JE=bdE.J;
+      const cf=(kind)=>{ const P=kind==='ou'?'cou':'cah';
+        const sd=parseInt(cv(P+'s')||'1'), ln=parseFloat(cv(P+'l')), bk=cv(P+'b');
+        if(!isFinite(ln)) return null;
+        const q=lineBet(JE,kind,sd,ln), qLo=lineBet(Jlo,kind,sd,ln), qHi=lineBet(Jhi,kind,sd,ln);
+        const out={fair:q.fair.toFixed(2)};
+        const b=parseFloat(bk);
+        if(isFinite(b)&&b>1){ const e=q.win*(b-1)-q.lose, e1=qLo.win*(b-1)-qLo.lose, e2=qHi.win*(b-1)-qHi.lose;
+          const lo=Math.min(e,e1,e2), hi=Math.max(e,e1,e2);
+          out.ev=(e>=0?'+':'')+(e*100).toFixed(1)+'%（'+(lo>=0?'+':'')+(lo*100).toFixed(1)+'〜'+(hi>=0?'+':'')+(hi*100).toFixed(1)+'）·K'+(Math.max(e,0)/(b-1)/4*100).toFixed(1)+'%';
+          out.cls=lo>0?'bev pos':(e>0?'bev mid':'bev neg'); }
+        return out; };
+      const r1=cf('ou'), r2=cf('ah');
+      return `<div class="crow"><span class="bk">自訂大細</span>
+        <input class="bo" id="coul_${id}" placeholder="線 2.25" value="${cv('coul')}" onchange="boardCommit('${id}')">
+        <select class="bo bsel2" id="cous_${id}" onchange="boardCommit('${id}')"><option value="1"${cv('cous')!=='-1'?' selected':''}>大</option><option value="-1"${cv('cous')==='-1'?' selected':''}>細</option></select>
+        <span class="bf" id="couf_${id}">${r1?r1.fair:''}</span>
+        <input class="bo" id="coub_${id}" placeholder="莊" value="${cv('coub')}" onchange="boardCommit('${id}')">
+        <span class="${r1&&r1.cls?r1.cls:'bev'}" id="coue_${id}">${r1&&r1.ev?r1.ev:''}</span></div>
+      <div class="crow"><span class="bk">自訂讓球</span>
+        <input class="bo" id="cahl_${id}" placeholder="線 -0.75" value="${cv('cahl')}" onchange="boardCommit('${id}')">
+        <select class="bo bsel2" id="cahs_${id}" onchange="boardCommit('${id}')"><option value="1"${cv('cahs')!=='-1'?' selected':''}>主</option><option value="-1"${cv('cahs')==='-1'?' selected':''}>客</option></select>
+        <span class="bf" id="cahf_${id}">${r2?r2.fair:''}</span>
+        <input class="bo" id="cahb_${id}" placeholder="莊" value="${cv('cahb')}" onchange="boardCommit('${id}')">
+        <span class="${r2&&r2.cls?r2.cls:'bev'}" id="cahe_${id}">${r2&&r2.ev?r2.ev:''}</span></div>`; })()}
+    <div class="bsub">讓球(主) -0.5 ${bdE.ah.m05.fair.toFixed(2)} | -1 ${bdE.ah.m1.fair.toFixed(2)} | -1.5 ${bdE.ah.m15.fair.toFixed(2)} | +0.5 ${bdE.ah.p05.fair.toFixed(2)}　·　波膽 ${bdE.cs.slice(0,4).map(s=>s[0]+'-'+s[1]).join(' ')}</div>
+  </div>`;
+}
+function marketBoardFromJ(J){ /* 由現成 joint 砌 marketDefs 需要嘅欄位（輕量） */
+  const _s=(f)=>{let t=0;for(const[x,y,p]of J)if(f(x,y))t+=p;return t;};
+  return {x12:{home:_s((x,y)=>x>y),draw:_s((x,y)=>x===y),away:_s((x,y)=>x<y)},
+    ou25:{over:_s((x,y)=>x+y>2.5)}, btts:_s((x,y)=>x>=1&&y>=1), J};
+}
+function boardCommit(id){
+  const ctx=BOARDCTX[id]; if(!ctx) return;
+  const keys=['h','d','a','o','u','bt','coul','cous','coub','cahl','cahs','cahb'];
+  for(const k of keys){ const el=document.getElementById((k.length<=2?'bk_'+id+'_'+k:k.slice(0,4)+(k.length>4?k.slice(4):'')+'_'+id))||document.getElementById(k+'_'+id)||document.getElementById('bk_'+id+'_'+k);
+    if(!el) continue; const v=(el.value||'').trim();
+    if(v) ODDS[id+'_'+k]=v; else delete ODDS[id+'_'+k];
+    if(['h','d','a','o','u','bt','coub','cahb'].includes(k)) ohSnap(id+'_'+k, v);
+  }
+  saveOdds();
+  ctx.anch=anchorFor(id);
+  const bdiv=document.getElementById('bd_'+id);
+  if(bdiv) bdiv.innerHTML=boardHTML(id,ctx.A,ctx.B,ctx.bdM);
+}
+function readScore(id){ const a=document.getElementById('in_'+id+'_a').value, b=document.getElementById('in_'+id+'_b').value;
+  if(a===''||b==='') return null; return [Math.max(0,parseInt(a)||0), Math.max(0,parseInt(b)||0)]; }
+function flash(id){ const c=document.getElementById('in_'+id+'_a'); if(c){c.style.borderColor='var(--red)'; setTimeout(()=>{try{c.style.borderColor='';}catch(e){}},1500);} }
+function saveG(id,lock=false){ const s=readScore(id); if(!s){flash(id);return;}
+  const prev=KNOWN.g[id];
+  let pre = (prev&&prev.pW!==undefined)?{pW:prev.pW,pD:prev.pD,pL:prev.pL}:null;   // 沿用首次快照
+  if(!pre){ delete KNOWN.g[id];   // 排除本場（防 Elo learning 數據洩漏）
+    const g=id[1],i=+id[2],j=+id[3]; const st=buildKnownState();
+    const A=st.eff[GROUPS[g][i][0]],B=st.eff[GROUPS[g][j][0]];
+    const gs=VENUEADJ?venueFactor(id):1; const an=analyzeT(A,B,gs);
+    pre={pW:an.pW,pD:an.pD,pL:an.pL}; }
+  KNOWN.g[id]={ga:s[0],gb:s[1],pW:pre.pW,pD:pre.pD,pL:pre.pL,locked:lock}; saveKnown(); renderDaily(curPage); }
+function confirmG(id){ saveG(id,true); }
+function saveK(m,sideKey){ const s=readScore('k'+m); if(!s){flash('k'+m);return;}
+  const prevK=KNOWN.k[m]; delete KNOWN.k[m];   // 排除本場（防 Elo learning 數據洩漏）
+  const st=buildKnownState(), t=st.koTeams[m]; if(!t){ if(prevK)KNOWN.k[m]=prevK; return; }
+  const A=t[0],B=t[1], win=sideKey==='A'?A:B;
+  let pre=(prevK&&prevK.pW!==undefined&&prevK.a===A.n&&prevK.b===B.n)?{pW:prevK.pW,pD:prevK.pD,pL:prevK.pL}:null;
+  if(!pre){ const gs=VENUEADJ?venueFactor('k'+m):1; const an=analyzeT(A,B,gs); pre={pW:an.pW,pD:an.pD,pL:an.pL}; }
+  KNOWN.k[m]={a:A.n,b:B.n,ga:s[0],gb:s[1],w:win.n,pW:pre.pW,pD:pre.pD,pL:pre.pL,locked:true}; saveKnown(); renderDaily(curPage); }
+function clearMatch(id){ const entry=id[0]==='g'?KNOWN.g[id]:KNOWN.k[+id.slice(1)]; if(entry?.locked){ toast('已確定賽果不可清除，撳 ✏ 修改先'); return; } if(id[0]==='g') delete KNOWN.g[id]; else delete KNOWN.k[+id.slice(1)]; saveKnown(); renderDaily(curPage); }
+function armUnlock(btn,id){
+  if(btn.dataset.armed==='1'){ btn.dataset.armed='';
+    const e=id[0]==='g'?KNOWN.g[id]:KNOWN.k[+id.slice(1)]; if(e) e.locked=false;   // 降級暫定，保留比數
+    saveKnown(); renderDaily(curPage); toast('已解鎖為暫定（比數保留），可修改或清除。'); }
+  else{ btn.dataset.armed='1'; const old=btn.textContent; btn.textContent='⚠ 確認解鎖'; btn.classList.add('danger');
+    setTimeout(()=>{ try{ if(btn.dataset.armed==='1'){btn.dataset.armed='';btn.textContent=old;btn.classList.remove('danger');} }catch(e){} },3000); }
+}
+function clearSimResults(){ let n=0;
+  for(const k in KNOWN.g){ if(!KNOWN.g[k].locked){ delete KNOWN.g[k]; n++; } }
+  for(const k in KNOWN.k){ if(!KNOWN.k[k].locked){ delete KNOWN.k[k]; n++; } }
+  saveKnown(); renderDaily(curPage); toast('已清除 '+n+' 個暫定賽果，確定賽果保留。');
+}
+function toggleBoard(id){ const el=document.getElementById('bd_'+id); if(el) el.classList.toggle('hide'); }
+/* 模擬單場（依模型抽樣一個賽果並記低，可再改/清）*/
+function simMatch(id){
+  applyStyle(); const st=buildKnownState();
+  if(id[0]==='g'){ if(KNOWN.g[id]?.locked){ toast('已確定賽果不可覆蓋，撳 ✏ 修改先'); return; } const g=id[1],i=+id[2],j=+id[3]; const A=st.eff[GROUPS[g][i][0]],B=st.eff[GROUPS[g][j][0]];
+    const r=playMatch(A,B,false); KNOWN.g[id]={ga:r.ga,gb:r.gb,locked:false}; }
+  else { const m=+id.slice(1); const t=st.koTeams[m]; if(!t) return; const A=t[0],B=t[1];
+    if(KNOWN.k[m]?.locked){ toast('已確定賽果不可覆蓋，撳 ✏ 修改先'); return; } const r=playMatch(A,B,true); const win=r.w===0?A:B; KNOWN.k[m]={a:A.n,b:B.n,ga:r.ga,gb:r.gb,w:win.n,pen:r.pen,locked:false}; }
+  saveKnown(); renderDaily(curPage);
+}
+/* 模擬本日所有未賽 */
+function simDay(){
+  applyStyle(); const pg=PAGES[curPage]; if(!pg) return;
+  for(const it of pg.items){ const r=it.ref;
+    if(r.kind==='g'){ if(KNOWN.g[r.id])continue; const st=buildKnownState(); const A=st.eff[GROUPS[r.g][r.i][0]],B=st.eff[GROUPS[r.g][r.j][0]];
+      const m=playMatch(A,B,false); KNOWN.g[r.id]={ga:m.ga,gb:m.gb,locked:false}; }
+    else { if(KNOWN.k[r.m])continue; const st=buildKnownState(); const t=st.koTeams[r.m]; if(!t)continue;
+      const A=t[0],B=t[1]; const m=playMatch(A,B,true); const win=m.w===0?A:B; KNOWN.k[r.m]={a:A.n,b:B.n,ga:m.ga,gb:m.gb,w:win.n,pen:m.pen,locked:false}; } }
+  saveKnown(); renderDaily(curPage);
+}
+
+/* 奪冠機率走勢（歷史快照） */
+function loadChampHist(){ try{const v=JSON.parse(localStorage.getItem('wc26champhist')); return Array.isArray(v)?v:[];}catch(e){return [];} }
+let CHIST=loadChampHist();
+function saveChampHist(){ try{localStorage.setItem('wc26champhist',JSON.stringify(CHIST.slice(-60)));}catch(e){} }
+function recordChampSnapshot(rows){
+  const pp=postProcess(rows), kc=knownCount();
+  const probs={}; pp.slice(0,10).forEach(r=>probs[r.n]=+(r.champ*100).toFixed(2));
+  const snap={ts:Date.now(), kc, probs};
+  if(CHIST.length && CHIST[CHIST.length-1].kc===kc) CHIST[CHIST.length-1]=snap;   // 同一已知狀態：覆蓋
+  else CHIST.push(snap);
+  saveChampHist(); renderChampTrend();
+}
+function renderChampTrend(){
+  const el=document.getElementById('champTrend'); if(!el) return;
+  if(CHIST.length<2){ el.innerHTML=CHIST.length?'<div class="note">入多啲賽果後，呢度會顯示奪冠機率走勢。</div>':''; return; }
+  const latest=CHIST[CHIST.length-1];
+  const teams=Object.keys(latest.probs).slice(0,5);
+  const cols=['#23e6a4','#5ab0ff','#ffd166','#ff7b9c','#b893ff'];
+  const W=560,H=150,P=24;
+  let maxY=0; CHIST.forEach(sn=>teams.forEach(t=>{ if(sn.probs[t]>maxY)maxY=sn.probs[t]; })); maxY=Math.ceil(maxY*1.15);
+  const X=i=>P+(W-2*P)*(CHIST.length===1?0:i/(CHIST.length-1));
+  const Y=v=>H-P-(H-2*P)*(v/maxY);
+  const lines=teams.map((t,k)=>{
+    const pts=CHIST.map((sn,i)=>sn.probs[t]!=null?X(i).toFixed(1)+','+Y(sn.probs[t]).toFixed(1):null).filter(Boolean).join(' ');
+    return `<polyline points="${pts}" fill="none" stroke="${cols[k]}" stroke-width="2"/>`;
+  }).join('');
+  const leg=teams.map((t,k)=>`<span style="color:${cols[k]};font-family:var(--cond);font-size:11px;margin-right:10px">● ${t} ${latest.probs[t].toFixed(1)}%</span>`).join('');
+  el.innerHTML=`<div class="cup-hd">📈 奪冠機率走勢（${CHIST.length} 個快照，x=已知賽果遞增）</div>
+    <svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px;display:block">
+      <line x1="${P}" y1="${H-P}" x2="${W-P}" y2="${H-P}" stroke="var(--line2)" stroke-width="1"/>
+      <text x="${P}" y="12" fill="var(--mut2)" font-size="10">${maxY}%</text>${lines}</svg>
+    <div style="margin-top:4px">${leg}</div>`;
+}
+
+/* 奪冠機率快覽 */
+let prevChampMap=null;
+function renderChampSummary(){
+  const el=document.getElementById("champSummary"); if(!el) return;
+  if(!MC_CACHE.rows || !MC_CACHE.rows.length){ el.classList.add("hide"); return; }
+  const rows=postProcess(MC_CACHE.rows);
+  const top=rows.slice(0,8);
+  const kc=knownCount();
+  const cells=top.map(r=>{
+    const p=(r.champ*100), prev=prevChampMap?prevChampMap[r.n]:null;
+    const d=prev!=null?p-prev:null;
+    const ds=d!=null?(d>=0.05?`<span class="cup-up">▲${d.toFixed(1)}</span>`:d<=-0.05?`<span class="cup-dn">▼${Math.abs(d).toFixed(1)}</span>`:''):'';
+    return `<div class="cup-cell"><span class="cup-fl">${r.f}</span><span class="cup-n">${r.n}</span><span class="cup-p">${p.toFixed(1)}%</span>${ds}</div>`;
+  }).join("");
+  el.innerHTML=`<div class="cup-hd">🏆 奪冠機率快覽 <span class="cup-sub">${MC_CACHE.N?.toLocaleString()} 次 · ${kc} 場已知固定</span><button class="mini" onclick="document.querySelector('.tab[data-v=\"prob\"]').click()" style="margin-left:auto;font-size:11px">詳細 →</button></div><div class="cup-row">${cells}</div>`;
+  el.classList.remove("hide");
+  prevChampMap={}; rows.forEach(r=>prevChampMap[r.n]=r.champ*100);
+}
+
+/* 後台自動條件化 MC（每次入賽果後自動觸發，Worker 跑唔阻 UI） */
+let bgMCTimer=null;
+function scheduleBackgroundMC(){
+  if(typeof PAGES==='undefined'||!PAGES.length) return;  // 引擎未就緒
+  clearTimeout(bgMCTimer);
+  bgMCTimer=setTimeout(runBackgroundMC, 1500);  // debounce 1.5s
+}
+async function runBackgroundMC(){
+  const BG_N=Math.min(Math.max(5000, MC_CACHE.N||0), 10000);   // 唔降級高精度結果
+  applyStyle();
+  const key=JSON.stringify(KNOWN)+'|'+VOL+'|'+SIGMA+'|'+LEARN+'|'+BG_N+'|'+ovrKey();
+  if(key===MC_CACHE.key && MC_CACHE.rows) return;  // 賽果冇變，唔重跑
+  const stat=$("#status"); if(stat) stat.textContent="⟳ 後台更新條件化機率（"+BG_N.toLocaleString()+" 次，"+knownCount()+" 場已知固定）…";
+  try{
+    const rows=await runMonteCarlo(BG_N,()=>{});
+    MC_CACHE={key,rows,N:BG_N};
+    lastRows=rows; lastN=BG_N;
+    autoCalibT();            // 重校 τ（內部 renderProb 一次）
+    recordChampSnapshot(rows);
+    $("#probEmpty").classList.add("hide"); $("#probContent").classList.remove("hide");
+    const kc=knownCount();
+    renderChampSummary();
+    const t3=postProcess(rows).slice(0,3).map(r=>r.n+' '+(r.champ*100).toFixed(1)+'%').join(' · ');
+    if(stat) stat.textContent=`✓ 條件化機率已更新（${kc} 場已知固定）。🏆 ${t3} → 詳見機率榜`;
+  }catch(e){ if(stat) stat.textContent="後台 MC 失敗，請手動撳 ▶ 按鈕。"; }
+}
+
+/* 狀態列訊息 */
+function toast(msg){ const s=$("#status"); if(s) s.textContent=msg; }
+
+/* 匯出 / 匯入 / 清除 */
+function exportData(){
+  const data=JSON.stringify({ver:2,known:KNOWN,odds:ODDS,ohist:OHIST,boost:BOOST,bank:BANK,ovr:OVR,follow:[...FOLLOW],champhist:CHIST,exported:new Date().toISOString()});
+  try{ const a=document.createElement('a'); a.href='data:application/json;charset=utf-8,'+encodeURIComponent(data);
+    a.download='wc2026-data.json'; document.body.appendChild(a); a.click(); a.remove();
+    toast('已匯出完整備份（賽果 '+knownCount()+' 場 · 賠率 '+Object.keys(ODDS).length+' 個 · 關注 '+FOLLOW.size+' 隊 · 走勢 '+CHIST.length+' 快照）'); }
+  catch(e){ toast('匯出失敗（沙盒限制），請用瀏覽器開'); }
+}
+function importData(file){
+  const r=new FileReader();
+  r.onload=()=>{ try{ const d=JSON.parse(r.result);
+    if(d.known&&d.known.g){ KNOWN=d.known; saveKnown(); }
+    if(d.odds&&typeof d.odds==='object'){ ODDS=d.odds; saveOdds(); }
+    if(d.ohist&&typeof d.ohist==='object'){ OHIST=d.ohist; saveOH(); }
+    if(d.boost&&typeof d.boost==='object'){ BOOST=d.boost; try{localStorage.setItem('wc26boost',JSON.stringify(BOOST));}catch(e){} }
+    if(isFinite(d.bank)&&d.bank>0){ BANK=d.bank; try{localStorage.setItem('wc26bank',String(BANK));}catch(e){} }
+    if(d.ovr&&typeof d.ovr==='object'){ OVR=d.ovr; saveOvr();
+      for(const g of GL) GROUPS[g].forEach(x=>{ x[2]=isFinite(OVR[x[0]])?OVR[x[0]]:RDEFAULT[x[0]]; });
+      TEAMS_FLAT=buildTeams(); }
+    if(Array.isArray(d.follow)){ FOLLOW=new Set(d.follow); saveFollow(); }
+    if(Array.isArray(d.champhist)){ CHIST=d.champhist; saveChampHist(); renderChampTrend(); }
+    curPage=null; renderDaily(); toast('已匯入備份'+(d.ver===2?'（完整 v2）':'（舊版：只含賽果）')); }
+    catch(e){ toast('匯入失敗：檔案格式錯誤'); } };
+  r.readAsText(file);
+}
+function doClear(){
+  KNOWN={g:{},k:{}}; saveKnown(); curPage=null;
+  MC_CACHE={key:null,rows:null,N:0}; TEMP=1; prevChampMap=null; lastRows=null;
+  for(const g of GL) GROUPS[g].forEach(x=>{ x[2]=RDEFAULT[x[0]]; }); OVR={}; saveOvr(); TEAMS_FLAT=buildTeams();
+  ODDS={}; saveOdds(); OHIST={}; saveOH(); BOOST={}; try{localStorage.setItem('wc26boost','{}');}catch(e){} CHIST=[]; saveChampHist();
+  const ct=$("#champTrend"); if(ct)ct.innerHTML="";
+  const cs=$("#champSummary"); if(cs){cs.classList.add("hide");cs.innerHTML="";}
+  renderDaily();
+  const pc=$("#probContent"),pe=$("#probEmpty"); if(pc)pc.classList.add("hide"); if(pe)pe.classList.remove("hide");
+  const oc=$("#oneContent"),oe=$("#oneEmpty"); if(oc)oc.classList.add("hide"); if(oe)oe.classList.remove("hide");
+  const hb=$("#clearKnown"); if(hb){hb.textContent="🗑 清除全部";hb.classList.remove("danger");hb.dataset.armed="";}
+  toast("已清除所有賽果（含確定賽果）。");
+}
+function armClear(btn){
+  if(!btn) return;
+  btn.onclick=()=>{
+    if(btn.dataset.armed==="1"){ btn.dataset.armed=""; doClear(); }
+    else{ btn.dataset.armed="1"; const old=btn.textContent; btn.textContent="⚠ 再撳確認清除"; btn.classList.add("danger");
+      setTimeout(()=>{ try{ if(btn.dataset.armed==="1"){btn.dataset.armed="";btn.textContent=old;btn.classList.remove("danger");} }catch(e){} },3000); }
+  };
+}
+function manualStart(){ renderDaily(); }
+
+/* ratings editor */
+function renderRatings(){
+  let html=`<div class="sec-h">實力值編輯（即時生效 · 自動記住 · 傷停/陣容 nudge 通道）
+    <button class="mini" style="margin-left:10px" onclick="resetOvr()">還原全部預設</button></div>
+    <div class="note" style="margin:0 0 12px">主場加成（美/墨 +45、加 +35）、σ、攻防學習、歷史先驗喺模擬時自動疊加，呢度只係基礎 rating。改動會自動觸發後台 MC 重算。</div><div class="groups">`;
+  for(const g of GL){
+    html+=`<div class="gcard"><h3>${g} 組</h3>`;
+    GROUPS[g].forEach((x,i)=>{
+      const d=x[2]-RDEFAULT[x[0]];
+      html+=`<div class="grow" style="grid-template-columns:1fr 76px"><span class="nm">${x[1]} ${x[0]}${d?` <small class="${d>0?'pos':'neg'}" style="font-family:var(--cond)">${d>0?'+':''}${d}</small>`:''}</span>
+        <input type="number" data-g="${g}" data-i="${i}" value="${x[2]}"
+        style="background:var(--bg2);border:1px solid ${d?'var(--gold)':'var(--line2)'};color:var(--txt);border-radius:7px;padding:5px 8px;width:100%;font-family:'Avenir Next Condensed','Helvetica Neue',system-ui,sans-serif;font-weight:700"></div>`;
+    });
+    html+=`</div>`;
+  }
+  $("#ratings").innerHTML=html+`</div>`;
+  $("#ratings").querySelectorAll("input").forEach(inp=>inp.onchange=()=>{
+    const g=inp.dataset.g, i=+inp.dataset.i, n=GROUPS[g][i][0], v=+inp.value;
+    if(!isFinite(v)||v<800||v>2600){ toast('實力值要喺 800–2600 之間'); inp.value=GROUPS[g][i][2]; return; }
+    GROUPS[g][i][2]=v; TEAMS_FLAT=buildTeams();
+    if(v===RDEFAULT[n]) delete OVR[n]; else OVR[n]=v;
+    saveOvr(); renderRatings();
+    renderDaily(curPage);                       // 卡片即時反映
+    scheduleBackgroundMC();                      // 機率自動重算
+    toast(n+' 實力改為 '+v+(v!==RDEFAULT[n]?'（預設 '+RDEFAULT[n]+'，已記住）':'（還原預設）'));
+  });
+}
+function resetOvr(){
+  for(const n in OVR){ for(const g of GL){ const t=GROUPS[g].find(x=>x[0]===n); if(t) t[2]=RDEFAULT[n]; } }
+  OVR={}; saveOvr(); TEAMS_FLAT=buildTeams(); renderRatings(); renderDaily(curPage); scheduleBackgroundMC();
+  toast('已還原全部實力預設值。');
+}
+
+/* events */
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));
+  document.querySelectorAll(".view").forEach(x=>x.classList.remove("on"));
+  t.classList.add("on"); $("#v-"+t.dataset.v).classList.add("on");
+  if(t.dataset.v==='manual'){ renderDaily(); renderChampSummary(); }
+  if(t.dataset.v==='stand') renderStandings();
+});
+function applyStyle(){const [v,s]=$("#vol").value.split("|"); VOL=+v; SIGMA=+s;}
+armClear($("#clearKnown"));
+$("#clearSim").onclick=clearSimResults;
+(function(){ const tb=$("#toolsBox"); if(!tb)return;
+  try{ if(localStorage.getItem('wc26tools')==='1') tb.open=true; }catch(e){}
+  tb.addEventListener('toggle',()=>{ try{localStorage.setItem('wc26tools',tb.open?'1':'0');}catch(e){} });
+})();
+$("#exportBtn").onclick=exportData;
+$("#importFile").onchange=(e)=>{ if(e.target.files&&e.target.files[0]) importData(e.target.files[0]); e.target.value=""; };
+$("#runOne").onclick=()=>{applyStyle();document.querySelector('.tab[data-v="one"]').click();renderOne();
+  $("#status").textContent="已產生一次完整賽果（已條件化於已知賽果，每次未賽部分隨機）。";};
+$("#toggleR").onclick=()=>{const r=$("#ratings");r.classList.toggle("hide");if(!r.innerHTML)renderRatings();};
+let MC_CACHE={key:null,rows:null,N:0};
+$("#runMC").onclick=async()=>{
+  applyStyle();
+  const N=+$("#runs").value, btn=$("#runMC");
+  const key=JSON.stringify(KNOWN)+'|'+VOL+'|'+SIGMA+'|'+LEARN+'|'+N+'|'+ovrKey();
+  const show=(rows)=>{ document.querySelector('.tab[data-v="prob"]').click();
+    $("#probEmpty").classList.add("hide"); $("#probContent").classList.remove("hide"); renderProb(rows,N); };
+  if(key===MC_CACHE.key && MC_CACHE.rows){ show(MC_CACHE.rows);
+    $("#status").textContent=`沿用上次結果（賽果同設定未變，免重跑）。`; return; }
+  btn.disabled=true; btn.textContent="模擬中…";
+  const t0=performance.now();
+  const rows=await runMonteCarlo(N,p=>{$("#prog").style.width=(p*100)+"%";
+    $("#status").textContent=`Monte Carlo 進行中：${Math.round(p*N).toLocaleString()} / ${N.toLocaleString()}`;});
+  MC_CACHE={key,rows,N};
+  show(rows);
+  autoCalibT();   // MC 完成後自動校準 temperature τ
+  recordChampSnapshot(rows);
+  renderChampSummary();
+  btn.disabled=false; btn.textContent="▶ 跑 Monte Carlo";
+  $("#status").textContent=`完成 ${N.toLocaleString()} 次模擬（${((performance.now()-t0)/1000).toFixed(1)}s${MC_USED_WORKER?' · Worker':''}）。τ 已自動校準 → 撳欄目排序。`; $("#prog").style.width="0%";
+};
+/* 初始渲染（預設「賽程聚焦」）*/
+renderDaily();
+if(knownCount()>0) scheduleBackgroundMC();  // 有已儲存賽果則自動更新條件化機率
+</script>
+</body>
+</html>
