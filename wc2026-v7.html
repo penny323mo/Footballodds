@@ -567,7 +567,12 @@ function rankThirds(thirds){
   const r=[...thirds].sort(cmpTeam), adv=r.slice(0,8);
   return {ranked:r, qualGroups:new Set(adv.map(x=>x.g)), advSet:new Set(adv.map(x=>x.g))};
 }
+// FIFA official 32強附加賽程 Annexe C 真實對照（呢個 8 隊組合喺真實賽事已經發生，
+// backtracking 揀法唔一定撞返官方表，所以呢一注實況組合直接鎖定官方真實結果）
+const T3_REAL_OVERRIDE = { "BDEFIJKL": {74:"D",77:"F",79:"E",80:"K",81:"B",82:"I",85:"J",87:"L"} };
 function assignThirds(qualGroups){
+  const key=[...qualGroups].sort().join('');
+  if(T3_REAL_OVERRIDE[key]) return {...T3_REAL_OVERRIDE[key]};
   const slots=T3SLOTS.map(s=>({m:s.m, opts:s.groups.filter(g=>qualGroups.has(g))}));
   const used=new Set(); const res={};
   (function bt(){
@@ -633,7 +638,7 @@ function stageReached(ctx, n){
 let MC_USED_WORKER=false;
 function buildWorkerSrc(){
   const fns=[eloStep,lamPair,formRatings,gamesPlayedMap,gauss,eloP,sampleScore,playMatch,buildTeams,cmpTeam,simGroups,rankThirds,assignThirds,resolveSide,simKO,simTournament,stageReached];
-  const consts=`var HPRIOR=${JSON.stringify(HPRIOR)},GROUPS=${JSON.stringify(GROUPS)},GL=${JSON.stringify(GL)},T3SLOTS=${JSON.stringify(T3SLOTS)},KORD=${JSON.stringify(KORD)},KO=${JSON.stringify(KO)},HOST=${JSON.stringify(HOST)},MD=${JSON.stringify(MD)},RHO=${RHO},MAXG=${MAXG},K_LEARN=${K_LEARN};var VOL=0.3,SIGMA=58,LEARN=true,KNOWN={g:{},k:{}};`;
+  const consts=`var HPRIOR=${JSON.stringify(HPRIOR)},GROUPS=${JSON.stringify(GROUPS)},GL=${JSON.stringify(GL)},T3SLOTS=${JSON.stringify(T3SLOTS)},T3_REAL_OVERRIDE=${JSON.stringify(T3_REAL_OVERRIDE)},KORD=${JSON.stringify(KORD)},KO=${JSON.stringify(KO)},HOST=${JSON.stringify(HOST)},MD=${JSON.stringify(MD)},RHO=${RHO},MAXG=${MAXG},K_LEARN=${K_LEARN};var VOL=0.3,SIGMA=58,LEARN=true,KNOWN={g:{},k:{}};`;
   const handler="onmessage=function(e){var d=e.data;VOL=d.VOL;SIGMA=d.SIGMA;LEARN=d.LEARN;KNOWN=d.KNOWN;var N=d.N;var teams=formRatings(),gp=gamesPlayedMap(),names=Object.keys(teams),tally={};names.forEach(function(n){tally[n]={r32:0,r16:0,qf:0,sf:0,fin:0,champ:0,g:teams[n].g};});for(var k=0;k<N;k++){var ctx=simTournament(teams,gp).ctx;for(var x=0;x<names.length;x++){var n=names[x],f=stageReached(ctx,n),t=tally[n];if(f.r32)t.r32++;if(f.r16)t.r16++;if(f.qf)t.qf++;if(f.sf)t.sf++;if(f.fin)t.fin++;if(f.champ)t.champ++;}if((k&511)===0)postMessage({p:k/N});}var rows=names.map(function(n){var t=tally[n];return{n:n,f:teams[n].f,g:t.g,r32:t.r32/N,r16:t.r16/N,qf:t.qf/N,sf:t.sf/N,fin:t.fin/N,champ:t.champ/N};}).sort(function(a,b){return b.champ-a.champ||b.fin-a.fin;});postMessage({done:true,rows:rows});};";
   return consts+"\n"+fns.map(f=>f.toString()).join("\n")+"\n"+handler;
 }
