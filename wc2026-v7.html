@@ -328,8 +328,9 @@ td.pos,.pos{color:var(--green)} td.neg,.neg{color:var(--red)}
   </div>
 
   <div class="view" id="v-one">
-    <div id="oneEmpty" class="note">撳上面 <b>🎲 單次完整賽果</b> 產生一次由 Day 1 到決賽嘅完整模擬（含 per-sim 實力擾動）。</div>
+    <div id="oneEmpty" class="note">尚未有任何已知賽果。撳上面 <b>🎲 單次完整賽果</b> 可產生一次由 Day 1 到決賽嘅完整模擬（含 per-sim 實力擾動）。</div>
     <div id="oneContent" class="hide">
+      <div id="oneSrc" class="note" style="margin:0 0 14px"></div>
       <div class="sec-h">小組賽最終排名</div>
       <div class="legend">
         <span><i class="dot" style="background:var(--green)"></i>小組首名</span>
@@ -764,9 +765,76 @@ function renderBracket(ctx){
 function renderOne(){
   const sim=simTournament(formRatings(), gamesPlayedMap(), true);
   $("#oneEmpty").classList.add("hide"); $("#oneContent").classList.remove("hide");
+  $("#oneSrc").innerHTML="🎲 單次隨機完整模擬（含 per-sim 實力擾動，已知真實賽果照用，未知部分隨機抽樣）。再撳一次會重新隨機。";
   renderOneGroups(sim.standings, sim.advSet, sim.gmatches);
   renderThirds(sim.ranked, sim.advSet);
   renderBracket(sim.ctx);
+}
+
+/* ---- 真實已知賽果晉級表（唔用隨機模擬，淨係用你已輸入嘅真實賽果）---- */
+function buildKnownGMatches(){
+  const pairs=[[0,1],[2,3],[0,2],[1,3],[0,3],[1,2]], gm={};
+  for(const g of GL){
+    gm[g]=[];
+    pairs.forEach(([i,j],pi)=>{
+      const kn=KNOWN.g['g'+g+i+j]; if(!kn) return;
+      gm[g].push({i,j,ga:kn.ga,gb:kn.gb,md:Math.floor(pi/2)+1,known:true});
+    });
+  }
+  return gm;
+}
+function renderThirdsReal(ranked, advSet){
+  let rows="";
+  ranked.forEach((s,i)=>{
+    const known=advSet!==null;
+    const status=known?(advSet.has(s.g)?'✔ 晉級':'淘汰'):'進行中';
+    const cls=known&&advSet.has(s.g)?'adv':'';
+    rows+=`<tr class="${cls}"><td>${i+1}</td>
+      <td><span class="fl">${s.tm.f}</span> ${s.tm.n}</td><td>${s.g} 組</td>
+      <td>${s.P}</td><td>${s.GD>0?'+':''}${s.GD}</td><td>${s.GF}</td>
+      <td>${status}</td></tr>`;
+  });
+  $("#one3").innerHTML=`<table class="t3"><tr><th>#</th><th>球隊</th><th>來自</th><th>分</th><th>球差</th><th>入球</th><th>結果</th></tr>${rows}</table>`;
+}
+function tieHTMLReal(m, koTeams, winners){
+  const teams=koTeams[m];
+  if(!teams) return `<div><div class="mlabel">M${m}</div><div class="tie"><div class="sd"><span class="nm mut">對戰未定</span></div></div></div>`;
+  const [A,B]=teams, win=winners[m];
+  if(!win) return `<div><div class="mlabel">M${m}</div><div class="tie">
+    <div class="sd"><span class="nm">${fl(A)}${A.n}</span></div>
+    <div class="sd"><span class="nm">${fl(B)}${B.n}</span></div></div></div>`;
+  const kn=KNOWN.k[m], wa=win.n===A.n;
+  return `<div><div class="mlabel">M${m}</div><div class="tie">
+    <div class="sd ${wa?'w':''}"><span class="nm">${fl(A)}${A.n}</span><span class="sc">${kn.ga}</span></div>
+    <div class="sd ${!wa?'w':''}"><span class="nm">${fl(B)}${B.n}</span><span class="sc">${kn.gb}</span></div>
+    ${kn.ga===kn.gb?`<div class="pen">十二碼 · ${win.n} 勝</div>`:''}</div></div>`;
+}
+function renderBracketReal(state){
+  const host=$("#oneBracket"); host.innerHTML="";
+  ROUND_DEF.forEach(rd=>{
+    let inner=`<h4>${rd.name}</h4>`;
+    rd.ms.forEach(m=> inner+=tieHTMLReal(m, state.koTeams, state.winners));
+    host.innerHTML+=`<div class="col">${inner}</div>`;
+  });
+  const champ=state.winners[104];
+  const champHTML=champ
+    ? `<div class="champ"><div class="t">★ 冠軍 ★</div><div class="n">${fl(champ)}${champ.n}</div></div>`
+    : `<div class="champ" style="opacity:.5"><div class="t">★ 冠軍 ★</div><div class="n">待定</div></div>`;
+  host.innerHTML+=`<div class="col" style="justify-content:center;gap:18px">
+    ${champHTML}
+    <div style="text-align:center"><div class="mlabel" style="padding-left:0">季軍戰 M103</div>${tieHTMLReal(103, state.koTeams, state.winners)}</div></div>`;
+}
+function renderOneReal(){
+  if(!knownCount()){ $("#oneEmpty").classList.remove("hide"); $("#oneContent").classList.add("hide"); return; }
+  const state=buildKnownState();
+  $("#oneEmpty").classList.add("hide"); $("#oneContent").classList.remove("hide");
+  const played=Object.keys(KNOWN.g).length, total=GL.length*KOPS.length;
+  $("#oneSrc").innerHTML=`📡 真實已知賽果（小組賽 ${played}/${total} 場已知${state.complete?'，小組賽已完成':''}）。撳「🎲 單次完整賽果」可改睇隨機模擬版本。`;
+  const advThirdGroups=state.complete?new Set(Object.values(state.thirdAssign)):new Set(GL);
+  renderOneGroups(state.standings, advThirdGroups, buildKnownGMatches());
+  const thirds=GL.map(g=>({...state.standings[g][2], g})).sort(cmpDisp);
+  renderThirdsReal(thirds, state.complete?new Set(Object.values(state.thirdAssign)):null);
+  renderBracketReal(state);
 }
 
 let lastRows=null, lastN=0, sortKey="champ";
@@ -1841,6 +1909,7 @@ document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
   t.classList.add("on"); $("#v-"+t.dataset.v).classList.add("on");
   if(t.dataset.v==='manual'){ renderDaily(); renderChampSummary(); }
   if(t.dataset.v==='stand') renderStandings();
+  if(t.dataset.v==='one') renderOneReal();
 });
 function applyStyle(){const [v,s]=$("#vol").value.split("|"); VOL=+v; SIGMA=+s;}
 armClear($("#clearKnown"));
